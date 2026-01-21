@@ -1,6 +1,34 @@
 # Multi-Agent Task Assistant
 
-A multi-agent system using Python, AutoGen, and OpenAI API with three coordinated agents (Planner, Executor, Reviewer), a professional Streamlit UI, and full authentication.
+A powerful AI-powered task management system that uses three coordinated agents (Planner, Executor, Reviewer) to break down, execute, and validate your tasks automatically.
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.31+-red.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+## Features
+
+- **Multi-Agent AI Workflow**
+  - **Planner Agent**: Analyzes your objective and creates detailed task plans
+  - **Executor Agent**: Executes each subtask with comprehensive outputs
+  - **Reviewer Agent**: Validates work quality and provides approval
+
+- **User Authentication**
+  - Secure registration and login
+  - JWT token-based sessions
+  - Argon2id password hashing (industry standard)
+
+- **Professional UI**
+  - Clean, modern Streamlit interface
+  - Real-time agent conversation display
+  - Task dashboard and history
+  - User profile with photo upload
+
+- **RESTful API**
+  - FastAPI backend with async support
+  - WebSocket for real-time updates
+  - SQLite database (easily upgradable to PostgreSQL)
 
 ## Architecture
 
@@ -16,236 +44,261 @@ A multi-agent system using Python, AutoGen, and OpenAI API with three coordinate
                     └─────────────────┘
 ```
 
-## Features
+## Quick Start (Local Development)
 
-- **Multi-Agent Workflow**: Three specialized agents work together
-  - **Planner**: Analyzes objectives and creates detailed task plans
-  - **Executor**: Executes each subtask with detailed outputs
-  - **Reviewer**: Validates work and provides final approval
+### 1. Clone the Repository
 
-- **Authentication**: Secure user management with Argon2id password hashing and JWT tokens
+```bash
+git clone https://github.com/Hemalathajagan/multitask_agent.git
+cd multitask_agent
+```
 
-- **Real-time Updates**: WebSocket support for live agent message streaming
-
-- **Professional UI**: Clean Streamlit interface with dashboard and task history
-
-## Setup
-
-### 1. Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+### 3. Configure Environment
 
-Edit the `.env` file with your settings:
+Create a `.env` file from the example:
 
-```env
-# Required: Your OpenAI API key
-OPENAI_API_KEY=your-openai-api-key-here
-
-# Change in production
-SECRET_KEY=your-secret-key-change-in-production
+```bash
+cp .env.example .env
 ```
 
-### 3. Run the Backend
+Edit `.env` with your settings:
 
+```env
+OPENAI_API_KEY=your-openai-api-key-here
+SECRET_KEY=your-secret-key-here
+```
+
+> Generate a secret key: `python -c "import secrets; print(secrets.token_hex(32))"`
+
+### 4. Run the Application
+
+**Terminal 1 - Backend:**
 ```bash
 python -m uvicorn app.main:app --reload
 ```
 
-The API will be available at `http://127.0.0.1:8000`
-
-### 4. Run the Frontend
-
-In a separate terminal:
-
+**Terminal 2 - Frontend:**
 ```bash
 streamlit run streamlit_app/app.py
 ```
 
-The UI will be available at `http://localhost:8501`
+### 5. Access the App
+
+- **Frontend**: http://localhost:8501
+- **Backend API**: http://127.0.0.1:8000
+- **API Docs**: http://127.0.0.1:8000/docs
 
 ## Usage
 
-1. **Register**: Create a new account with email, username, and password
-2. **Login**: Sign in with your credentials
-3. **Create Task**: Enter your objective in the task input form
-4. **Watch Agents**: See the Planner, Executor, and Reviewer collaborate
-5. **View Results**: Check the plan, execution, and review results
-
-## API Endpoints
-
-### Authentication
-- `POST /auth/register` - Register new user
-- `POST /auth/login` - Login and get JWT token
-- `POST /auth/logout` - Logout and clear session
-- `GET /auth/me` - Get current user info
-
-### Tasks
-- `POST /tasks/` - Create new task
-- `GET /tasks/` - List user's tasks
-- `GET /tasks/{task_id}` - Get task details
-
-### WebSocket
-- `WS /ws/task/{task_id}` - Real-time task updates
+1. **Register** - Create an account with email and password
+2. **Login** - Sign in to your account
+3. **Create Task** - Enter your objective (e.g., "Create a marketing plan for a mobile app")
+4. **Watch Agents** - See Planner → Executor → Reviewer collaborate
+5. **View Results** - Check the detailed plan, execution, and review
 
 ## Project Structure
 
 ```
-ai_agent/
-├── app/
-│   ├── main.py              # FastAPI entry point
-│   ├── config.py            # Environment configuration
-│   ├── agents/              # AutoGen agents
-│   │   ├── planner.py
-│   │   ├── executor.py
-│   │   ├── reviewer.py
-│   │   └── orchestrator.py
-│   ├── api/                 # API endpoints
-│   │   ├── auth.py
-│   │   ├── tasks.py
-│   │   └── websocket.py
-│   ├── auth/                # Authentication
-│   │   ├── security.py
-│   │   └── dependencies.py
-│   ├── db/                  # Database
-│   │   ├── database.py
-│   │   ├── models.py
-│   │   └── crud.py
-│   └── schemas/             # Pydantic models
-├── streamlit_app/
-│   ├── app.py               # Main Streamlit app
-│   ├── pages/
-│   ├── components/
-│   └── utils/
-├── .env
+multitask_agent/
+├── app/                        # FastAPI Backend
+│   ├── main.py                 # App entry point
+│   ├── config.py               # Configuration
+│   ├── agents/                 # AutoGen Agents
+│   │   ├── planner.py          # Planning agent
+│   │   ├── executor.py         # Execution agent
+│   │   ├── reviewer.py         # Review agent
+│   │   └── orchestrator.py     # Agent coordination
+│   ├── api/                    # API Routes
+│   │   ├── auth.py             # Authentication
+│   │   ├── tasks.py            # Task management
+│   │   └── websocket.py        # Real-time updates
+│   ├── auth/                   # Auth utilities
+│   ├── db/                     # Database
+│   └── schemas/                # Pydantic models
+├── streamlit_app/              # Streamlit Frontend
+│   ├── app.py                  # Main app
+│   ├── pages/                  # App pages
+│   │   ├── 1_dashboard.py      # Task dashboard
+│   │   ├── 2_history.py        # Task history
+│   │   └── 3_profile.py        # User profile
+│   ├── components/             # UI components
+│   └── utils/                  # Utilities
 ├── requirements.txt
+├── .env.example
 └── README.md
 ```
 
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/register` | Register new user |
+| POST | `/auth/login` | Login user |
+| POST | `/auth/logout` | Logout user |
+| GET | `/auth/me` | Get current user |
+| PUT | `/auth/profile` | Update profile |
+| PUT | `/auth/password` | Change password |
+| PUT | `/auth/photo` | Update profile photo |
+| POST | `/tasks/` | Create new task |
+| GET | `/tasks/` | List all tasks |
+| GET | `/tasks/{id}` | Get task details |
+
 ## Technology Stack
 
-- **Backend**: FastAPI, SQLAlchemy, SQLite
-- **Agents**: AutoGen 0.4+, OpenAI GPT-4o-mini
-- **Frontend**: Streamlit
-- **Auth**: Argon2id, JWT
-- **Real-time**: WebSockets
+| Component | Technology |
+|-----------|------------|
+| Backend | FastAPI, Python 3.11+ |
+| Frontend | Streamlit |
+| AI Agents | AutoGen 0.4+, OpenAI GPT-4o-mini |
+| Database | SQLite (async SQLAlchemy) |
+| Authentication | JWT, Argon2id |
+| Real-time | WebSockets |
+
+---
 
 ## Deployment Guide
 
-### Option 1: Deploy on Railway (Recommended - Easy)
+### Best Free Option: Render (Backend) + Streamlit Cloud (Frontend)
 
-Railway supports both FastAPI and Streamlit with automatic deployments.
+This combination gives you **completely free** hosting with generous limits.
 
-1. **Create Railway Account**: Go to [railway.app](https://railway.app) and sign up
+---
 
-2. **Create New Project**: Click "New Project" → "Deploy from GitHub repo"
+### Step 1: Deploy Backend on Render (Free)
 
-3. **Connect Repository**: Select `Hemalathajagan/multitask_agent`
+1. **Go to [render.com](https://render.com)** and sign up (free)
 
-4. **Add Environment Variables** in Railway dashboard:
-   ```
-   OPENAI_API_KEY=your-openai-api-key
-   SECRET_KEY=your-secret-key-here
-   API_HOST=0.0.0.0
-   API_PORT=8000
-   ```
+2. **Click "New +" → "Web Service"**
 
-5. **Configure Services**: You'll need two services:
-   - **Backend Service**:
-     - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - **Frontend Service**:
-     - Start command: `streamlit run streamlit_app/app.py --server.port $PORT --server.address 0.0.0.0`
+3. **Connect your GitHub repo**: `Hemalathajagan/multitask_agent`
 
-6. **Update Frontend API URL**: In `streamlit_app/utils/api_client.py`, change:
+4. **Configure the service**:
+   - **Name**: `multitask-agent-api`
+   - **Region**: Choose nearest to you
+   - **Branch**: `main`
+   - **Runtime**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+5. **Add Environment Variables** (click "Advanced"):
+   | Key | Value |
+   |-----|-------|
+   | `OPENAI_API_KEY` | Your OpenAI API key |
+   | `SECRET_KEY` | A random secure string |
+   | `API_HOST` | `0.0.0.0` |
+
+6. **Click "Create Web Service"**
+
+7. **Wait for deployment** - You'll get a URL like: `https://multitask-agent-api.onrender.com`
+
+> **Note**: Free tier sleeps after 15 min of inactivity. First request may take 30-60 seconds to wake up.
+
+---
+
+### Step 2: Update Frontend API URL
+
+Before deploying frontend, update the API URL:
+
+**Edit `streamlit_app/utils/api_client.py`:**
+
+```python
+# Change this line:
+API_BASE_URL = "http://127.0.0.1:8000"
+
+# To your Render URL:
+API_BASE_URL = "https://multitask-agent-api.onrender.com"
+```
+
+**Commit and push**:
+```bash
+git add .
+git commit -m "Update API URL for deployment"
+git push
+```
+
+---
+
+### Step 3: Deploy Frontend on Streamlit Cloud (Free)
+
+1. **Go to [share.streamlit.io](https://share.streamlit.io)** and sign in with GitHub
+
+2. **Click "New app"**
+
+3. **Configure**:
+   - **Repository**: `Hemalathajagan/multitask_agent`
+   - **Branch**: `main`
+   - **Main file path**: `streamlit_app/app.py`
+
+4. **Click "Deploy!"**
+
+5. **Your app will be live** at: `https://your-app-name.streamlit.app`
+
+---
+
+### Alternative Free Options
+
+| Platform | Free Tier | Best For |
+|----------|-----------|----------|
+| **Render** | 750 hours/month | Backend API |
+| **Streamlit Cloud** | Unlimited for public repos | Frontend |
+| **Railway** | $5 credit/month | Full stack |
+| **Hugging Face Spaces** | Unlimited | AI/ML apps |
+| **Fly.io** | 3 shared VMs | Containers |
+
+---
+
+### Production Deployment Tips
+
+1. **Use PostgreSQL** instead of SQLite:
    ```python
-   API_BASE_URL = "https://your-backend-service.railway.app"
-   ```
-
-### Option 2: Deploy on Render
-
-1. **Create Render Account**: Go to [render.com](https://render.com)
-
-2. **Create Web Service for Backend**:
-   - Connect GitHub repo
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - Add environment variables (OPENAI_API_KEY, SECRET_KEY)
-
-3. **Create Web Service for Frontend**:
-   - Start Command: `streamlit run streamlit_app/app.py --server.port $PORT --server.address 0.0.0.0`
-   - Update API_BASE_URL to point to backend URL
-
-### Option 3: Deploy on Heroku
-
-1. **Create Procfile** in project root:
-   ```
-   web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-   ```
-
-2. **Deploy**:
-   ```bash
-   heroku create your-app-name
-   heroku config:set OPENAI_API_KEY=your-key SECRET_KEY=your-secret
-   git push heroku main
-   ```
-
-3. **For Streamlit**: Deploy separately or use Streamlit Cloud
-
-### Option 3: Deploy on Streamlit Cloud (Frontend Only)
-
-Best for the Streamlit frontend when backend is hosted elsewhere.
-
-1. Go to [share.streamlit.io](https://share.streamlit.io)
-2. Connect your GitHub repository
-3. Set main file path: `streamlit_app/app.py`
-4. Add secrets in Streamlit Cloud dashboard
-
-### Option 4: Deploy with Docker
-
-1. **Create Dockerfile**:
-   ```dockerfile
-   FROM python:3.11-slim
-   WORKDIR /app
-   COPY requirements.txt .
-   RUN pip install -r requirements.txt
-   COPY . .
-   EXPOSE 8000 8501
-   CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port 8000 & streamlit run streamlit_app/app.py --server.port 8501 --server.address 0.0.0.0"]
-   ```
-
-2. **Build and Run**:
-   ```bash
-   docker build -t multitask-agent .
-   docker run -p 8000:8000 -p 8501:8501 -e OPENAI_API_KEY=your-key -e SECRET_KEY=your-secret multitask-agent
-   ```
-
-### Option 5: Deploy on AWS/GCP/Azure
-
-For production deployments, consider:
-- **AWS**: ECS/Fargate with Application Load Balancer
-- **GCP**: Cloud Run (serverless containers)
-- **Azure**: Container Apps
-
-### Important Notes for Deployment
-
-1. **Database**: For production, replace SQLite with PostgreSQL:
-   ```python
-   # In app/db/database.py
    DATABASE_URL = "postgresql+asyncpg://user:pass@host/db"
    ```
 
-2. **CORS**: Update allowed origins in `app/main.py`:
+2. **Update CORS** in `app/main.py`:
    ```python
-   allow_origins=["https://your-frontend-domain.com"]
+   allow_origins=["https://your-frontend.streamlit.app"]
    ```
 
-3. **Environment Variables**: Never commit `.env` - always set via platform dashboard
+3. **Use environment variables** - Never commit `.env` files
 
-4. **API URL**: Update `API_BASE_URL` in `streamlit_app/utils/api_client.py` to match your deployed backend URL
+4. **Enable HTTPS** - All platforms above provide free SSL
+
+---
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `OPENAI_API_KEY` | Your OpenAI API key | Yes |
+| `SECRET_KEY` | JWT signing key | Yes |
+| `API_HOST` | API host (default: 127.0.0.1) | No |
+| `API_PORT` | API port (default: 8000) | No |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token expiry (default: 60) | No |
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [AutoGen](https://github.com/microsoft/autogen) - Multi-agent framework
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [Streamlit](https://streamlit.io/) - App framework for ML/AI
+
+---
+
+**Made with by [Hemalathajagan](https://github.com/Hemalathajagan)**
