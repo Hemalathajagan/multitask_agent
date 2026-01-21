@@ -132,3 +132,120 @@ ai_agent/
 - **Frontend**: Streamlit
 - **Auth**: Argon2id, JWT
 - **Real-time**: WebSockets
+
+## Deployment Guide
+
+### Option 1: Deploy on Railway (Recommended - Easy)
+
+Railway supports both FastAPI and Streamlit with automatic deployments.
+
+1. **Create Railway Account**: Go to [railway.app](https://railway.app) and sign up
+
+2. **Create New Project**: Click "New Project" → "Deploy from GitHub repo"
+
+3. **Connect Repository**: Select `Hemalathajagan/multitask_agent`
+
+4. **Add Environment Variables** in Railway dashboard:
+   ```
+   OPENAI_API_KEY=your-openai-api-key
+   SECRET_KEY=your-secret-key-here
+   API_HOST=0.0.0.0
+   API_PORT=8000
+   ```
+
+5. **Configure Services**: You'll need two services:
+   - **Backend Service**:
+     - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Frontend Service**:
+     - Start command: `streamlit run streamlit_app/app.py --server.port $PORT --server.address 0.0.0.0`
+
+6. **Update Frontend API URL**: In `streamlit_app/utils/api_client.py`, change:
+   ```python
+   API_BASE_URL = "https://your-backend-service.railway.app"
+   ```
+
+### Option 2: Deploy on Render
+
+1. **Create Render Account**: Go to [render.com](https://render.com)
+
+2. **Create Web Service for Backend**:
+   - Connect GitHub repo
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - Add environment variables (OPENAI_API_KEY, SECRET_KEY)
+
+3. **Create Web Service for Frontend**:
+   - Start Command: `streamlit run streamlit_app/app.py --server.port $PORT --server.address 0.0.0.0`
+   - Update API_BASE_URL to point to backend URL
+
+### Option 3: Deploy on Heroku
+
+1. **Create Procfile** in project root:
+   ```
+   web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+   ```
+
+2. **Deploy**:
+   ```bash
+   heroku create your-app-name
+   heroku config:set OPENAI_API_KEY=your-key SECRET_KEY=your-secret
+   git push heroku main
+   ```
+
+3. **For Streamlit**: Deploy separately or use Streamlit Cloud
+
+### Option 3: Deploy on Streamlit Cloud (Frontend Only)
+
+Best for the Streamlit frontend when backend is hosted elsewhere.
+
+1. Go to [share.streamlit.io](https://share.streamlit.io)
+2. Connect your GitHub repository
+3. Set main file path: `streamlit_app/app.py`
+4. Add secrets in Streamlit Cloud dashboard
+
+### Option 4: Deploy with Docker
+
+1. **Create Dockerfile**:
+   ```dockerfile
+   FROM python:3.11-slim
+   WORKDIR /app
+   COPY requirements.txt .
+   RUN pip install -r requirements.txt
+   COPY . .
+   EXPOSE 8000 8501
+   CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port 8000 & streamlit run streamlit_app/app.py --server.port 8501 --server.address 0.0.0.0"]
+   ```
+
+2. **Build and Run**:
+   ```bash
+   docker build -t multitask-agent .
+   docker run -p 8000:8000 -p 8501:8501 -e OPENAI_API_KEY=your-key -e SECRET_KEY=your-secret multitask-agent
+   ```
+
+### Option 5: Deploy on AWS/GCP/Azure
+
+For production deployments, consider:
+- **AWS**: ECS/Fargate with Application Load Balancer
+- **GCP**: Cloud Run (serverless containers)
+- **Azure**: Container Apps
+
+### Important Notes for Deployment
+
+1. **Database**: For production, replace SQLite with PostgreSQL:
+   ```python
+   # In app/db/database.py
+   DATABASE_URL = "postgresql+asyncpg://user:pass@host/db"
+   ```
+
+2. **CORS**: Update allowed origins in `app/main.py`:
+   ```python
+   allow_origins=["https://your-frontend-domain.com"]
+   ```
+
+3. **Environment Variables**: Never commit `.env` - always set via platform dashboard
+
+4. **API URL**: Update `API_BASE_URL` in `streamlit_app/utils/api_client.py` to match your deployed backend URL
+
+## License
+
+MIT License
