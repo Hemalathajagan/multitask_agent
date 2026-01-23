@@ -3,10 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.db.database import get_db
-from app.db.crud import create_task, get_task, get_user_tasks, update_task_status
+from app.db.crud import (
+    create_task, get_task, get_user_tasks, update_task_status,
+    update_task_objective, reset_task_for_rerun, delete_task_messages
+)
 from app.db.models import TaskStatus, User
 from app.auth.dependencies import get_current_user
-from app.schemas.task import TaskCreate, TaskResponse, TaskListResponse, TaskCreateResponse
+from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, TaskCreateResponse
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -78,3 +81,97 @@ async def get_task_details(
             for msg in task.messages
         ]
     }
+
+
+@router.put("/{task_id}", response_model=TaskCreateResponse)
+async def rename_task(
+    task_id: int,
+    task_data: TaskUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Rename a task (update objective)."""
+    task = await get_task(db, task_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    if task.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this task"
+        )
+
+    updated_task = await update_task_objective(db, task_id, task_data.objective)
+    return updated_task
+
+
+@router.post("/{task_id}/rerun", response_model=TaskCreateResponse)
+async def rerun_task(
+    task_id: int,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Re-run an existing task with the same objective."""
+    task = await get_task(db, task_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    if task.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this task"
+        )
+
+    # Delete old messages
+    await delete_task_messages(db, task_id)
+
+    # Reset task for re-running
+    updated_task = await reset_task_for_rerun(db, task_id)
+
+    # Start agent processing in background
+    from app.agents.orchestrator import process_task
+    background_tasks.add_task(process_task, task_id)
+
+    return updated_task
+
+
+@router.post("/{task_id}/continue", response_model=TaskCreateResponse, status_code=status.HTTP_201_CREATED)
+async def continue_task(
+    task_id: int,
+    task_data: TaskCreate,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a follow-up task based on a previous task."""
+    original_task = await get_task(db, task_id)
+    if not original_task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Original task not found"
+        )
+    if original_task.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this task"
+        )
+
+    # Create context from previous task
+    context = f"[Continue from previous task: {original_task.objective}]\n\n"
+    if original_task.review_result:
+        context += f"Previous result summary:\n{original_task.review_result[:500]}\n\n"
+    context += f"New objective: {task_data.objective}"
+
+    # Create new task with context
+    new_task = await create_task(db, current_user.id, context)
+
+    # Start agent processing in background
+    from app.agents.orchestrator import process_task
+    background_tasks.add_task(process_task, new_task.id)
+
+    return new_task

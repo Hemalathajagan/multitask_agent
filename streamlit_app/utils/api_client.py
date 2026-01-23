@@ -103,6 +103,40 @@ class APIClient:
                 return {"success": True, "data": response.json()}
             return {"success": False, "error": _safe_json_error(response, "Failed to fetch task")}
 
+    async def rename_task(self, task_id: int, objective: str) -> Dict[str, Any]:
+        async with httpx.AsyncClient() as client:
+            response = await client.put(
+                f"{self.base_url}/tasks/{task_id}",
+                json={"objective": objective},
+                headers=self._get_headers(),
+            )
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": _safe_json_error(response, "Failed to rename task")}
+
+    async def rerun_task(self, task_id: int) -> Dict[str, Any]:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/tasks/{task_id}/rerun",
+                headers=self._get_headers(),
+                timeout=30.0,
+            )
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": _safe_json_error(response, "Failed to rerun task")}
+
+    async def continue_task(self, task_id: int, objective: str) -> Dict[str, Any]:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/tasks/{task_id}/continue",
+                json={"objective": objective},
+                headers=self._get_headers(),
+                timeout=30.0,
+            )
+            if response.status_code == 201:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": _safe_json_error(response, "Failed to continue task")}
+
     async def update_profile(self, username: str = None, email: str = None) -> Dict[str, Any]:
         async with httpx.AsyncClient() as client:
             data = {}
@@ -209,6 +243,30 @@ def sync_get_task(task_id: int) -> Dict[str, Any]:
     if "token" in st.session_state:
         client.set_token(st.session_state.token)
     return asyncio.run(client.get_task(task_id))
+
+
+def sync_rename_task(task_id: int, objective: str) -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.rename_task(task_id, objective))
+
+
+def sync_rerun_task(task_id: int) -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.rerun_task(task_id))
+
+
+def sync_continue_task(task_id: int, objective: str) -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.continue_task(task_id, objective))
 
 
 def sync_update_profile(username: str = None, email: str = None) -> Dict[str, Any]:

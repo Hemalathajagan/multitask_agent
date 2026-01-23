@@ -129,6 +129,38 @@ async def update_task_review(db: AsyncSession, task_id: int, review_result: str)
     return task
 
 
+async def update_task_objective(db: AsyncSession, task_id: int, objective: str) -> Optional[Task]:
+    """Update the task objective (rename)."""
+    task = await get_task(db, task_id)
+    if task:
+        task.objective = objective
+        await db.commit()
+        await db.refresh(task)
+    return task
+
+
+async def reset_task_for_rerun(db: AsyncSession, task_id: int, new_objective: Optional[str] = None) -> Optional[Task]:
+    """Reset a task to pending state for re-running."""
+    task = await get_task(db, task_id)
+    if task:
+        if new_objective:
+            task.objective = new_objective
+        task.status = TaskStatus.PENDING
+        task.plan = None
+        task.execution_result = None
+        task.review_result = None
+        await db.commit()
+        await db.refresh(task)
+    return task
+
+
+async def delete_task_messages(db: AsyncSession, task_id: int):
+    """Delete all messages for a task."""
+    from sqlalchemy import delete
+    await db.execute(delete(AgentMessage).where(AgentMessage.task_id == task_id))
+    await db.commit()
+
+
 # AgentMessage CRUD
 async def create_agent_message(db: AsyncSession, task_id: int, agent_name: str, content: str) -> AgentMessage:
     message = AgentMessage(task_id=task_id, agent_name=agent_name, content=content)

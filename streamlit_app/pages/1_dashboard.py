@@ -7,7 +7,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from streamlit_app.utils import (
     init_session_state, is_authenticated, clear_authentication,
-    sync_logout, sync_get_task, sync_get_tasks, sync_create_task, sync_get_me
+    sync_logout, sync_get_task, sync_get_tasks, sync_create_task, sync_get_me,
+    sync_rename_task, sync_rerun_task, sync_continue_task
 )
 from streamlit_app.components import render_login_form, render_register_form
 
@@ -324,7 +325,101 @@ def render_dashboard():
                 elif task["status"] == "completed":
                     st.success("🎉 Task Completed Successfully!")
 
+                    # Task Actions - neat button row
+                    st.markdown("#### ⚙️ Task Actions")
+                    action_col1, action_col2, action_col3 = st.columns(3)
+
+                    with action_col1:
+                        if st.button("✏️ Rename", use_container_width=True, key="rename_btn"):
+                            st.session_state.show_rename_modal = True
+
+                    with action_col2:
+                        if st.button("🔄 Re-run", use_container_width=True, key="rerun_btn"):
+                            st.session_state.show_rerun_confirm = True
+
+                    with action_col3:
+                        if st.button("➕ Continue", use_container_width=True, key="continue_btn"):
+                            st.session_state.show_continue_modal = True
+
+                    # Rename Modal
+                    if st.session_state.get("show_rename_modal"):
+                        st.markdown("---")
+                        st.markdown("##### ✏️ Rename Task")
+                        new_name = st.text_input(
+                            "New task name",
+                            value=task["objective"],
+                            key="new_task_name"
+                        )
+                        rename_col1, rename_col2 = st.columns(2)
+                        with rename_col1:
+                            if st.button("💾 Save", use_container_width=True, key="save_rename"):
+                                if new_name and len(new_name) >= 10:
+                                    result = sync_rename_task(task["id"], new_name)
+                                    if result["success"]:
+                                        st.success("Task renamed!")
+                                        st.session_state.show_rename_modal = False
+                                        st.rerun()
+                                    else:
+                                        st.error(result["error"])
+                                else:
+                                    st.warning("Name must be at least 10 characters")
+                        with rename_col2:
+                            if st.button("❌ Cancel", use_container_width=True, key="cancel_rename"):
+                                st.session_state.show_rename_modal = False
+                                st.rerun()
+
+                    # Rerun Confirmation
+                    if st.session_state.get("show_rerun_confirm"):
+                        st.markdown("---")
+                        st.markdown("##### 🔄 Re-run Task")
+                        st.warning("This will clear the previous results and run the task again.")
+                        rerun_col1, rerun_col2 = st.columns(2)
+                        with rerun_col1:
+                            if st.button("✅ Yes, Re-run", use_container_width=True, key="confirm_rerun"):
+                                result = sync_rerun_task(task["id"])
+                                if result["success"]:
+                                    st.success("Task is being re-run!")
+                                    st.session_state.show_rerun_confirm = False
+                                    st.rerun()
+                                else:
+                                    st.error(result["error"])
+                        with rerun_col2:
+                            if st.button("❌ Cancel", use_container_width=True, key="cancel_rerun"):
+                                st.session_state.show_rerun_confirm = False
+                                st.rerun()
+
+                    # Continue Modal
+                    if st.session_state.get("show_continue_modal"):
+                        st.markdown("---")
+                        st.markdown("##### ➕ Continue Task")
+                        st.info("Create a follow-up task that builds on this one.")
+                        continue_objective = st.text_area(
+                            "What would you like to do next?",
+                            placeholder="Describe the next step or follow-up task...",
+                            height=100,
+                            key="continue_objective"
+                        )
+                        continue_col1, continue_col2 = st.columns(2)
+                        with continue_col1:
+                            if st.button("🚀 Create Follow-up", use_container_width=True, key="create_continue"):
+                                if continue_objective and len(continue_objective) >= 10:
+                                    result = sync_continue_task(task["id"], continue_objective)
+                                    if result["success"]:
+                                        st.success(f"Follow-up task #{result['data']['id']} created!")
+                                        st.session_state.current_task_id = result["data"]["id"]
+                                        st.session_state.show_continue_modal = False
+                                        st.rerun()
+                                    else:
+                                        st.error(result["error"])
+                                else:
+                                    st.warning("Please enter at least 10 characters")
+                        with continue_col2:
+                            if st.button("❌ Cancel", use_container_width=True, key="cancel_continue"):
+                                st.session_state.show_continue_modal = False
+                                st.rerun()
+
                     # Show final output prominently
+                    st.markdown("---")
                     st.markdown("#### 📊 Final Output")
 
                     # Show the review result (final summary) first

@@ -9,6 +9,10 @@ class TaskCreate(BaseModel):
     objective: str = Field(..., min_length=10, max_length=2000)
 
 
+class TaskUpdate(BaseModel):
+    objective: str = Field(..., min_length=10, max_length=2000)
+
+
 class TaskCreateResponse(BaseModel):
     """Response for task creation - without messages to avoid async issues."""
     id: int
