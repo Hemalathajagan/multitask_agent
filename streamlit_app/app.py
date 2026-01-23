@@ -11,12 +11,19 @@ from streamlit_app.utils import (
 )
 from streamlit_app.components import render_login_form, render_register_form, get_avatar_html
 
-# Page config
+# Initialize session state first to check auth
+from streamlit_app.utils import init_session_state as _init
+_init()
+
+# Check if authenticated for sidebar state
+_is_auth = st.session_state.get("authenticated", False) and st.session_state.get("token") is not None
+
+# Page config - hide sidebar on login page
 st.set_page_config(
     page_title="Multi-Agent Task Assistant",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded" if _is_auth else "collapsed"
 )
 
 # Custom CSS for better styling
@@ -128,6 +135,15 @@ init_session_state()
 
 def render_auth_page():
     """Render the authentication page."""
+    # Hide sidebar completely on auth page
+    st.markdown("""
+    <style>
+        [data-testid="stSidebar"] { display: none; }
+        [data-testid="stSidebarNav"] { display: none; }
+        [data-testid="collapsedControl"] { display: none; }
+    </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("""
     <div class="main-header">
         <h1>🤖 Multi-Agent Task Assistant</h1>
@@ -258,7 +274,7 @@ def render_home():
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
                 border-left: 3px solid {status_color};
             ">
-                <strong>{status_emoji} {task['objective'][:60]}{'...' if len(task['objective']) > 60 else ''}</strong>
+                <strong style="color: #1a202c; font-size: 1rem;">{status_emoji} {task['objective'][:60]}{'...' if len(task['objective']) > 60 else ''}</strong>
                 <br>
                 <small style="color: #718096;">Status: {task['status'].title()}</small>
             </div>

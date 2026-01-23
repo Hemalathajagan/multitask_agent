@@ -107,17 +107,41 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Quick Navigation
+# Quick Navigation using buttons
 st.markdown("### 🧭 Quick Navigation")
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.markdown("[What is this?](#what-is-this)")
+    st.markdown("""
+    <a href="#what-is-this" style="text-decoration:none;">
+        <div style="background:#667eea;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+            What is this?
+        </div>
+    </a>
+    """, unsafe_allow_html=True)
 with col2:
-    st.markdown("[How to Use](#how-to-use)")
+    st.markdown("""
+    <a href="#how-to-use" style="text-decoration:none;">
+        <div style="background:#48bb78;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+            How to Use
+        </div>
+    </a>
+    """, unsafe_allow_html=True)
 with col3:
-    st.markdown("[The Agents](#the-agents)")
+    st.markdown("""
+    <a href="#the-agents" style="text-decoration:none;">
+        <div style="background:#ed8936;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+            The Agents
+        </div>
+    </a>
+    """, unsafe_allow_html=True)
 with col4:
-    st.markdown("[Tips & Tricks](#tips-tricks)")
+    st.markdown("""
+    <a href="#tips-tricks" style="text-decoration:none;">
+        <div style="background:#e53e3e;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+            Tips & Tricks
+        </div>
+    </a>
+    """, unsafe_allow_html=True)
 
 st.markdown("---")
 
