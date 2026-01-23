@@ -284,7 +284,6 @@ def render_dashboard():
                 # Auto-refresh for active tasks (every 5 seconds)
                 if task["status"] in ["planning", "executing", "reviewing", "pending"]:
                     st_autorefresh(interval=5000, limit=None, key="task_autorefresh")
-                    st.info("🔄 Auto-refreshing every 5 seconds...")
 
                 # Task header
                 st.markdown(f"### 📌 Task #{task['id']}")
