@@ -279,6 +279,26 @@ def render_dashboard():
             if result["success"]:
                 task = result["data"]
 
+                # Auto-refresh for active tasks (every 3 seconds)
+                if task["status"] in ["planning", "executing", "reviewing", "pending"]:
+                    st.markdown("""
+                    <meta http-equiv="refresh" content="3">
+                    <style>
+                        .auto-refresh-notice {
+                            background: #ebf8ff;
+                            border: 1px solid #4299e1;
+                            border-radius: 8px;
+                            padding: 0.5rem 1rem;
+                            margin-bottom: 1rem;
+                            font-size: 0.85rem;
+                            color: #2b6cb0;
+                        }
+                    </style>
+                    <div class="auto-refresh-notice">
+                        🔄 Auto-refreshing every 3 seconds...
+                    </div>
+                    """, unsafe_allow_html=True)
+
                 # Task header
                 st.markdown(f"### 📌 Task #{task['id']}")
 
@@ -294,9 +314,9 @@ def render_dashboard():
                 st.markdown("---")
                 render_progress_bar(task["status"])
 
-                # Refresh button for active tasks
+                # Manual refresh button for active tasks
                 if task["status"] in ["planning", "executing", "reviewing", "pending"]:
-                    if st.button("🔄 Refresh Status", use_container_width=True):
+                    if st.button("🔄 Refresh Now", use_container_width=True):
                         st.rerun()
 
                 # Agent messages
