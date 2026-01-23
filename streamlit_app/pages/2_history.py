@@ -6,10 +6,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from streamlit_app.utils import (
-    init_session_state, is_authenticated, clear_authentication,
-    sync_logout, sync_get_tasks, sync_get_task, sync_get_me
+    init_session_state, is_authenticated,
+    sync_get_tasks, sync_get_task
 )
-from streamlit_app.components import render_login_form, render_register_form
+from streamlit_app.components import render_login_form, render_register_form, render_sidebar
 
 st.set_page_config(
     page_title="History - Multi-Agent Task Assistant",
@@ -272,58 +272,9 @@ def render_history():
                     st.markdown(task["review_result"][:500] + "..." if len(task.get("review_result", "")) > 500 else task.get("review_result", ""))
 
 
-# Sidebar
-with st.sidebar:
-    # User avatar section
-    if is_authenticated():
-        user_result = sync_get_me()
-        user = user_result.get("data") if user_result["success"] else None
-
-        if user:
-            username = user.get("username", "User")
-            first_letter = username[0].upper()
-            profile_photo = user.get("profile_photo")
-
-            if profile_photo:
-                avatar_html = f'<img src="data:image/png;base64,{profile_photo}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">'
-            else:
-                avatar_html = f'''
-                <div style="
-                    width:50px;height:50px;border-radius:50%;
-                    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    display:flex;align-items:center;justify-content:center;
-                    color:white;font-weight:bold;font-size:1.5rem;
-                ">{first_letter}</div>
-                '''
-
-            st.markdown(f"""
-            <div style="text-align:center;padding:1rem 0;border-bottom:1px solid #e2e8f0;margin-bottom:1rem;">
-                <div style="display:flex;justify-content:center;margin-bottom:0.5rem;">
-                    {avatar_html}
-                </div>
-                <div style="font-weight:600;color:#2d3748;">{username}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            if st.button("👤 View Profile", use_container_width=True, key="avatar_profile_btn"):
-                st.switch_page("pages/3_profile.py")
-
-    st.markdown("### 🤖 Task Assistant")
-    st.markdown("---")
-
-    if st.button("🏠 Home", use_container_width=True):
-        st.switch_page("app.py")
-
-    if st.button("➕ New Task", use_container_width=True):
-        st.switch_page("pages/1_dashboard.py")
-
-    st.markdown("---")
-
-    if is_authenticated():
-        if st.button("🚪 Logout", use_container_width=True):
-            sync_logout()
-            clear_authentication()
-            st.rerun()
+# Render shared sidebar
+if is_authenticated():
+    render_sidebar(current_page="history")
 
 # Main content
 if is_authenticated():

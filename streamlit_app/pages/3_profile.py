@@ -11,7 +11,7 @@ from streamlit_app.utils import (
     sync_logout, sync_get_me, sync_update_profile, sync_change_password,
     sync_get_tasks, sync_update_photo
 )
-from streamlit_app.components import render_login_form, render_register_form
+from streamlit_app.components import render_login_form, render_register_form, render_sidebar
 
 st.set_page_config(
     page_title="Profile - Multi-Agent Task Assistant",
@@ -419,27 +419,9 @@ def render_profile():
             st.rerun()
 
 
-# Sidebar
-with st.sidebar:
-    st.markdown("### 🤖 Task Assistant")
-    st.markdown("---")
-
-    if st.button("🏠 Home", use_container_width=True):
-        st.switch_page("app.py")
-
-    if st.button("➕ New Task", use_container_width=True):
-        st.switch_page("pages/1_dashboard.py")
-
-    if st.button("📜 History", use_container_width=True):
-        st.switch_page("pages/2_history.py")
-
-    st.markdown("---")
-
-    if is_authenticated():
-        if st.button("🚪 Logout", use_container_width=True):
-            sync_logout()
-            clear_authentication()
-            st.rerun()
+# Render shared sidebar
+if is_authenticated():
+    render_sidebar(current_page="profile")
 
 # Main content
 if is_authenticated():

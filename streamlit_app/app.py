@@ -6,10 +6,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from streamlit_app.utils import (
-    init_session_state, is_authenticated, clear_authentication,
-    sync_logout, sync_get_tasks, sync_get_me
+    init_session_state, is_authenticated,
+    sync_get_tasks
 )
-from streamlit_app.components import render_login_form, render_register_form, get_avatar_html
+from streamlit_app.components import render_login_form, render_register_form, render_sidebar
 
 # Initialize session state first to check auth
 from streamlit_app.utils import init_session_state as _init
@@ -285,69 +285,8 @@ def render_home():
 
 def render_main_app():
     """Render the main application."""
-    # Get user info for avatar
-    user_result = sync_get_me()
-    user = user_result.get("data") if user_result["success"] else None
-
-    # Sidebar
-    with st.sidebar:
-        # User profile section at top
-        if user:
-            username = user.get("username", "User")
-            first_letter = username[0].upper()
-            profile_photo = user.get("profile_photo")
-
-            if profile_photo:
-                avatar_html = f'<img src="data:image/png;base64,{profile_photo}" style="width:45px;height:45px;border-radius:50%;object-fit:cover;">'
-            else:
-                avatar_html = f'''
-                <div style="
-                    width:45px;height:45px;border-radius:50%;
-                    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    display:flex;align-items:center;justify-content:center;
-                    color:white;font-weight:bold;font-size:1.2rem;
-                ">{first_letter}</div>
-                '''
-
-            st.markdown(f"""
-            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:#f8fafc;border-radius:10px;margin-bottom:1.5rem;">
-                {avatar_html}
-                <div>
-                    <div style="font-weight:600;color:#1a202c;font-size:0.95rem;">{username}</div>
-                    <div style="color:#718096;font-size:0.8rem;">Welcome back</div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        # Navigation buttons - grouped together
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("🏠 Home", use_container_width=True, key="nav_home"):
-                st.session_state.current_page = "home"
-                st.rerun()
-        with col2:
-            if st.button("➕ New Task", use_container_width=True, key="nav_task"):
-                st.switch_page("pages/1_dashboard.py")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("📜 History", use_container_width=True, key="nav_history"):
-                st.switch_page("pages/2_history.py")
-        with col2:
-            if st.button("👤 Profile", use_container_width=True, key="nav_profile"):
-                st.switch_page("pages/3_profile.py")
-
-        st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
-
-        if st.button("📖 How It Works", use_container_width=True, key="nav_guide"):
-            st.switch_page("pages/4_how_it_works.py")
-
-        st.markdown("---")
-
-        if st.button("🚪 Logout", use_container_width=True, type="secondary", key="nav_logout"):
-            sync_logout()
-            clear_authentication()
-            st.rerun()
+    # Render shared sidebar
+    render_sidebar(current_page="home")
 
     # Main content
     render_home()

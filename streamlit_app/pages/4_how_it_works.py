@@ -5,7 +5,8 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from streamlit_app.utils import init_session_state
+from streamlit_app.utils import init_session_state, is_authenticated
+from streamlit_app.components import render_sidebar
 
 st.set_page_config(
     page_title="How It Works - Multi-Agent Task Assistant",
@@ -383,20 +384,6 @@ with col2:
     if st.button("🚀 Go to Dashboard", use_container_width=True, type="primary"):
         st.switch_page("pages/1_dashboard.py")
 
-# Sidebar
-with st.sidebar:
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🏠 Home", use_container_width=True):
-            st.switch_page("app.py")
-    with col2:
-        if st.button("➕ New Task", use_container_width=True):
-            st.switch_page("pages/1_dashboard.py")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("📜 History", use_container_width=True):
-            st.switch_page("pages/2_history.py")
-    with col2:
-        if st.button("👤 Profile", use_container_width=True):
-            st.switch_page("pages/3_profile.py")
+# Render shared sidebar
+if is_authenticated():
+    render_sidebar(current_page="guide")
