@@ -29,6 +29,9 @@ st.set_page_config(
 # Custom CSS for better styling
 st.markdown("""
 <style>
+    /* Hide default Streamlit page navigation */
+    [data-testid="stSidebarNav"] { display: none !important; }
+
     /* Main container styling */
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -103,14 +106,6 @@ st.markdown("""
         font-size: 0.9rem;
     }
 
-    /* Sidebar styling */
-    .sidebar-header {
-        text-align: center;
-        padding: 1rem 0;
-        border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 1rem;
-    }
-
     /* Auth form styling */
     .auth-container {
         max-width: 400px;
@@ -125,6 +120,21 @@ st.markdown("""
     .stButton > button {
         border-radius: 8px;
         font-weight: 500;
+    }
+
+    /* Sidebar nav button styling */
+    .nav-link {
+        display: block;
+        padding: 0.6rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 8px;
+        color: #4a5568;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .nav-link:hover {
+        background: #f7fafc;
+        color: #667eea;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -161,14 +171,6 @@ def render_auth_page():
 
         with tab2:
             render_register_form()
-
-        st.markdown("---")
-        st.markdown("""
-        <div style="text-align: center; color: #718096; font-size: 0.85rem;">
-            <p><strong>How it works:</strong></p>
-            <p>📋 Planner Agent → ⚡ Executor Agent → ✅ Reviewer Agent</p>
-        </div>
-        """, unsafe_allow_html=True)
 
 
 def render_home():
@@ -289,54 +291,60 @@ def render_main_app():
 
     # Sidebar
     with st.sidebar:
-        # User avatar section at top
+        # User profile section at top
         if user:
             username = user.get("username", "User")
             first_letter = username[0].upper()
             profile_photo = user.get("profile_photo")
 
             if profile_photo:
-                avatar_html = f'<img src="data:image/png;base64,{profile_photo}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">'
+                avatar_html = f'<img src="data:image/png;base64,{profile_photo}" style="width:45px;height:45px;border-radius:50%;object-fit:cover;">'
             else:
                 avatar_html = f'''
                 <div style="
-                    width:50px;height:50px;border-radius:50%;
+                    width:45px;height:45px;border-radius:50%;
                     background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     display:flex;align-items:center;justify-content:center;
-                    color:white;font-weight:bold;font-size:1.5rem;
+                    color:white;font-weight:bold;font-size:1.2rem;
                 ">{first_letter}</div>
                 '''
 
             st.markdown(f"""
-            <div style="text-align:center;padding:1rem 0;border-bottom:1px solid #e2e8f0;margin-bottom:1rem;">
-                <div style="display:flex;justify-content:center;margin-bottom:0.5rem;">
-                    {avatar_html}
+            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:#f8fafc;border-radius:10px;margin-bottom:1.5rem;">
+                {avatar_html}
+                <div>
+                    <div style="font-weight:600;color:#1a202c;font-size:0.95rem;">{username}</div>
+                    <div style="color:#718096;font-size:0.8rem;">Welcome back</div>
                 </div>
-                <div style="font-weight:600;color:#2d3748;">{username}</div>
             </div>
             """, unsafe_allow_html=True)
 
-            if st.button("👤 View Profile", use_container_width=True, key="avatar_profile_btn"):
+        # Navigation buttons - grouped together
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🏠 Home", use_container_width=True, key="nav_home"):
+                st.session_state.current_page = "home"
+                st.rerun()
+        with col2:
+            if st.button("➕ New Task", use_container_width=True, key="nav_task"):
+                st.switch_page("pages/1_dashboard.py")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("📜 History", use_container_width=True, key="nav_history"):
+                st.switch_page("pages/2_history.py")
+        with col2:
+            if st.button("👤 Profile", use_container_width=True, key="nav_profile"):
                 st.switch_page("pages/3_profile.py")
 
-        st.markdown("### Navigation")
+        st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-        if st.button("🏠 Home", use_container_width=True):
-            st.session_state.current_page = "home"
-            st.rerun()
-
-        if st.button("➕ New Task", use_container_width=True):
-            st.switch_page("pages/1_dashboard.py")
-
-        if st.button("📜 History", use_container_width=True):
-            st.switch_page("pages/2_history.py")
-
-        if st.button("📖 How It Works", use_container_width=True):
+        if st.button("📖 How It Works", use_container_width=True, key="nav_guide"):
             st.switch_page("pages/4_how_it_works.py")
 
         st.markdown("---")
 
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("🚪 Logout", use_container_width=True, type="secondary", key="nav_logout"):
             sync_logout()
             clear_authentication()
             st.rerun()

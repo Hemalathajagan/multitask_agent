@@ -22,6 +22,9 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
+    /* Hide default Streamlit page navigation */
+    [data-testid="stSidebarNav"] { display: none !important; }
+
     .profile-header {
         background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
         padding: 2rem;

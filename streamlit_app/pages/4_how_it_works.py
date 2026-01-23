@@ -16,6 +16,9 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
+    /* Hide default Streamlit page navigation */
+    [data-testid="stSidebarNav"] { display: none !important; }
+
     .guide-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
@@ -32,6 +35,16 @@ st.markdown("""
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin-bottom: 1rem;
         border-left: 4px solid;
+    }
+
+    .step-card h4 {
+        color: #1a202c !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .step-card p {
+        color: #4a5568 !important;
+        margin: 0;
     }
 
     .step-card.step-1 { border-left-color: #667eea; }
@@ -56,12 +69,12 @@ st.markdown("""
     .agent-title {
         font-size: 1.3rem;
         font-weight: 600;
-        color: #2d3748;
+        color: #1a202c;
         margin-bottom: 0.5rem;
     }
 
     .agent-desc {
-        color: #718096;
+        color: #4a5568;
         font-size: 0.95rem;
     }
 
@@ -72,12 +85,24 @@ st.markdown("""
         margin: 0.5rem 0;
     }
 
+    .feature-box strong {
+        color: #1a202c;
+    }
+
     .tip-box {
         background: #ebf8ff;
         border-left: 4px solid #4299e1;
         padding: 1rem;
         border-radius: 0 8px 8px 0;
         margin: 1rem 0;
+    }
+
+    .tip-box strong {
+        color: #1a202c !important;
+    }
+
+    .tip-box br + * {
+        color: #2d3748 !important;
     }
 
     .warning-box {
@@ -88,8 +113,12 @@ st.markdown("""
         margin: 1rem 0;
     }
 
+    .warning-box strong {
+        color: #1a202c !important;
+    }
+
     .section-title {
-        color: #2d3748;
+        color: #1a202c;
         border-bottom: 2px solid #e2e8f0;
         padding-bottom: 0.5rem;
         margin-top: 2rem;
@@ -285,24 +314,24 @@ st.markdown('<h2 class="section-title" id="tips-tricks">💡 Tips & Tricks</h2>'
 
 st.markdown("""
 <div class="tip-box">
-    <strong>🎯 Be Specific</strong><br>
-    Instead of "Write a plan", try "Write a 30-day social media marketing plan for a bakery targeting local customers"
+    <strong style="color:#1a202c;">🎯 Be Specific</strong><br>
+    <span style="color:#2d3748;">Instead of "Write a plan", try "Write a 30-day social media marketing plan for a bakery targeting local customers"</span>
 </div>
 
 <div class="tip-box">
-    <strong>📋 Include Context</strong><br>
-    Provide relevant details like target audience, constraints, preferences, or specific requirements.
+    <strong style="color:#1a202c;">📋 Include Context</strong><br>
+    <span style="color:#2d3748;">Provide relevant details like target audience, constraints, preferences, or specific requirements.</span>
 </div>
 
 <div class="tip-box">
-    <strong>🔄 Use Continue</strong><br>
-    Build on completed tasks using the "Continue" feature to create follow-up tasks with context.
+    <strong style="color:#1a202c;">🔄 Use Continue</strong><br>
+    <span style="color:#2d3748;">Build on completed tasks using the "Continue" feature to create follow-up tasks with context.</span>
 </div>
 
 <div class="warning-box">
-    <strong>⚠️ Session Note</strong><br>
-    Avoid refreshing the browser page (F5) while logged in, as this will log you out.
-    Use the in-app navigation instead.
+    <strong style="color:#1a202c;">⚠️ Session Note</strong><br>
+    <span style="color:#2d3748;">Avoid refreshing the browser page (F5) while logged in, as this will log you out.
+    Use the in-app navigation instead.</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -356,17 +385,18 @@ with col2:
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 📖 Guide")
-    st.markdown("---")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🏠 Home", use_container_width=True):
+            st.switch_page("app.py")
+    with col2:
+        if st.button("➕ New Task", use_container_width=True):
+            st.switch_page("pages/1_dashboard.py")
 
-    if st.button("🏠 Home", use_container_width=True):
-        st.switch_page("app.py")
-
-    if st.button("➕ New Task", use_container_width=True):
-        st.switch_page("pages/1_dashboard.py")
-
-    if st.button("📜 History", use_container_width=True):
-        st.switch_page("pages/2_history.py")
-
-    if st.button("👤 Profile", use_container_width=True):
-        st.switch_page("pages/3_profile.py")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📜 History", use_container_width=True):
+            st.switch_page("pages/2_history.py")
+    with col2:
+        if st.button("👤 Profile", use_container_width=True):
+            st.switch_page("pages/3_profile.py")
