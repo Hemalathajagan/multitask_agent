@@ -279,25 +279,9 @@ def render_dashboard():
             if result["success"]:
                 task = result["data"]
 
-                # Auto-refresh for active tasks (every 3 seconds)
+                # Auto-refresh notice for active tasks
                 if task["status"] in ["planning", "executing", "reviewing", "pending"]:
-                    st.markdown("""
-                    <meta http-equiv="refresh" content="3">
-                    <style>
-                        .auto-refresh-notice {
-                            background: #ebf8ff;
-                            border: 1px solid #4299e1;
-                            border-radius: 8px;
-                            padding: 0.5rem 1rem;
-                            margin-bottom: 1rem;
-                            font-size: 0.85rem;
-                            color: #2b6cb0;
-                        }
-                    </style>
-                    <div class="auto-refresh-notice">
-                        🔄 Auto-refreshing every 3 seconds...
-                    </div>
-                    """, unsafe_allow_html=True)
+                    st.info("🔄 Task in progress - Click 'Refresh Now' to see updates")
 
                 # Task header
                 st.markdown(f"### 📌 Task #{task['id']}")
@@ -319,30 +303,56 @@ def render_dashboard():
                     if st.button("🔄 Refresh Now", use_container_width=True):
                         st.rerun()
 
-                # Agent messages
                 st.markdown("---")
-                st.markdown("#### 💬 Agent Conversation")
 
-                if task.get("messages"):
-                    render_agent_messages(task["messages"])
-                else:
-                    if task["status"] == "pending":
-                        st.info("⏳ Task is queued. Processing will begin shortly...")
-                    else:
-                        st.info("🔄 Agents are working on your task...")
+                # Show status-appropriate content
+                if task["status"] == "pending":
+                    st.info("⏳ Task is queued. Processing will begin shortly...")
 
-                # Results expandables
-                if task.get("plan"):
-                    with st.expander("📋 View Plan", expanded=False):
+                elif task["status"] == "planning":
+                    st.info("📋 Planner Agent is analyzing your objective...")
+
+                elif task["status"] == "executing":
+                    st.info("⚡ Executor Agent is working on the task...")
+                    if task.get("plan"):
+                        st.markdown("#### 📋 Plan Created")
                         st.markdown(task["plan"])
 
-                if task.get("execution_result"):
-                    with st.expander("⚡ View Execution Result", expanded=False):
-                        st.markdown(task["execution_result"])
+                elif task["status"] == "reviewing":
+                    st.info("✅ Reviewer Agent is validating the work...")
 
-                if task.get("review_result"):
-                    with st.expander("✅ View Review Result", expanded=True):
+                elif task["status"] == "completed":
+                    st.success("🎉 Task Completed Successfully!")
+
+                    # Show final output prominently
+                    st.markdown("#### 📊 Final Output")
+
+                    # Show the review result (final summary) first
+                    if task.get("review_result"):
                         st.markdown(task["review_result"])
+
+                    # Show detailed sections in expandables
+                    st.markdown("---")
+                    st.markdown("##### 📁 Detailed Results")
+
+                    if task.get("plan"):
+                        with st.expander("📋 View Plan", expanded=False):
+                            st.markdown(task["plan"])
+
+                    if task.get("execution_result"):
+                        with st.expander("⚡ View Execution Details", expanded=False):
+                            st.markdown(task["execution_result"])
+
+                    # Show agent conversation in collapsed expander
+                    if task.get("messages"):
+                        with st.expander("💬 View Agent Conversation", expanded=False):
+                            render_agent_messages(task["messages"])
+
+                elif task["status"] == "failed":
+                    st.error("❌ Task Failed")
+                    if task.get("messages"):
+                        with st.expander("💬 View Details", expanded=True):
+                            render_agent_messages(task["messages"])
             else:
                 st.error("Failed to load task details")
         else:
