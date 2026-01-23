@@ -215,12 +215,16 @@ def render_dashboard():
     with col1:
         st.markdown("### ➕ Create New Task")
 
-        # Task input
+        # Initialize sample task in session state if not exists
+        if "selected_sample" not in st.session_state:
+            st.session_state.selected_sample = ""
+
+        # Task input - use value parameter instead of key for pre-filling
         objective = st.text_area(
             "What would you like to accomplish?",
+            value=st.session_state.selected_sample,
             placeholder="Describe your task objective in detail...",
-            height=120,
-            key="task_objective"
+            height=120
         )
 
         if st.button("🚀 Submit Task", use_container_width=True, type="primary"):
@@ -229,6 +233,7 @@ def render_dashboard():
                     result = sync_create_task(objective)
                 if result["success"]:
                     st.session_state.current_task_id = result["data"]["id"]
+                    st.session_state.selected_sample = ""  # Clear after submit
                     st.success(f"Task #{result['data']['id']} created!")
                     st.rerun()
                 else:
@@ -249,7 +254,7 @@ def render_dashboard():
 
         for sample in samples:
             if st.button(f"📝 {sample[:40]}...", key=f"sample_{hash(sample)}", use_container_width=True):
-                st.session_state.task_objective = sample
+                st.session_state.selected_sample = sample
                 st.rerun()
 
         # Recent tasks
