@@ -1,0 +1,9 @@
+[server]
+runOnSave = true
+
+[client]
+showErrorDetails = true
+toolbarMode = "minimal"
+
+[runner]
+fastReruns = true

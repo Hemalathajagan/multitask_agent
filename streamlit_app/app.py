@@ -213,32 +213,6 @@ def render_home():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # How it works section - brief overview with link to full guide
-    st.subheader("🎯 How It Works")
-    st.markdown("""
-    <div style="
-        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-        padding: 1.5rem;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        text-align: center;
-    ">
-        <p style="font-size: 1.1rem; color: #4a5568; margin-bottom: 1rem;">
-            <strong>📋 Planner</strong> → <strong>⚡ Executor</strong> → <strong>✅ Reviewer</strong>
-        </p>
-        <p style="color: #718096; margin-bottom: 0;">
-            Three AI agents work together to plan, execute, and review your tasks for high-quality results.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("📖 Learn More - Full Guide", use_container_width=True):
-            st.switch_page("pages/4_how_it_works.py")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
     # Quick actions
     st.subheader("🚀 Quick Actions")
     col1, col2 = st.columns(2)
