@@ -2,6 +2,8 @@
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 streamlit>=1.31.0
+streamlit-autorefresh>=1.0.1
+email-validator>=2.1.0
 
 # AutoGen
 autogen-agentchat>=0.4.0

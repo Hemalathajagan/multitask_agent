@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 from pathlib import Path
+from streamlit_autorefresh import st_autorefresh
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -280,9 +281,10 @@ def render_dashboard():
             if result["success"]:
                 task = result["data"]
 
-                # Auto-refresh notice for active tasks
+                # Auto-refresh for active tasks (every 5 seconds)
                 if task["status"] in ["planning", "executing", "reviewing", "pending"]:
-                    st.info("🔄 Task in progress - Click 'Refresh Now' to see updates")
+                    st_autorefresh(interval=5000, limit=None, key="task_autorefresh")
+                    st.info("🔄 Auto-refreshing every 5 seconds...")
 
                 # Task header
                 st.markdown(f"### 📌 Task #{task['id']}")
