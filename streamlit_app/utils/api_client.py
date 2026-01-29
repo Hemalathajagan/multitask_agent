@@ -2,7 +2,7 @@ import httpx
 from typing import Optional, Dict, Any, List
 import streamlit as st
 
-API_BASE_URL = "http://127.0.0.1:8000"
+API_BASE_URL = "https://multitask-agent.onrender.com"
 
 
 def _safe_json_error(response: httpx.Response, default: str) -> str:
