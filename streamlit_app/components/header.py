@@ -39,7 +39,7 @@ def render_user_header(user: dict):
             font-weight: bold;
             font-size: 1.2rem;
             color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             overflow: hidden;
         }
 
@@ -106,7 +106,7 @@ def render_avatar_circle(user: dict, size: int = 40):
             width: {size}px;
             height: {size}px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             display: inline-flex;
             align-items: center;
             justify-content: center;

@@ -19,43 +19,103 @@ st.set_page_config(
     layout="wide"
 )
 
-# Professional CSS
+# Professional CSS - Warm Orange Theme
 st.markdown("""
 <style>
-    /* Hide default Streamlit page navigation */
-    [data-testid="stSidebarNav"] { display: none !important; }
+    /* ============================================
+       RESET & BASE STYLES - WARM ORANGE THEME
+       ============================================ */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    /* Dashboard Header */
+    /* Hide Streamlit defaults but keep sidebar toggle */
+    [data-testid="stSidebarNav"] { display: none !important; }
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+    [data-testid="stToolbar"] { visibility: hidden; }
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        height: 0 !important;
+        min-height: 0 !important;
+    }
+
+    /* Hide sidebar collapse/expand buttons */
+    [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebar"] button[kind="header"],
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+
+    /* Base font */
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .stApp {
+        background: linear-gradient(180deg, #fffbf5 0%, #fef7ed 100%);
+    }
+
+    /* ============================================
+       DASHBOARD HEADER - WARM ORANGE
+       ============================================ */
     .dashboard-header {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-        padding: 2rem 2.5rem;
-        border-radius: 16px;
+        background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
         color: white;
         margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(30, 58, 95, 0.3);
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+            0 20px 40px rgba(234, 88, 12, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 60%;
+        height: 200%;
+        background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
+        pointer-events: none;
     }
 
     .dashboard-header h1 {
         margin: 0 0 0.5rem 0;
-        font-size: 1.8rem;
-        font-weight: 700;
-        letter-spacing: -0.5px;
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        position: relative;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .dashboard-header p {
         margin: 0;
-        opacity: 0.85;
+        opacity: 0.95;
         font-size: 1rem;
+        position: relative;
     }
 
-    /* Cards */
+    /* ============================================
+       PROFESSIONAL CARDS
+       ============================================ */
     .pro-card {
-        background: #ffffff;
+        background: white;
         border-radius: 16px;
-        padding: 1.75rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8ecf1;
+        padding: 1.5rem;
         margin-bottom: 1.5rem;
+        border: 1px solid rgba(234, 88, 12, 0.08);
+        box-shadow:
+            0 1px 3px rgba(0,0,0,0.04),
+            0 4px 12px rgba(234, 88, 12, 0.06);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pro-card:hover {
+        box-shadow:
+            0 8px 24px rgba(234, 88, 12, 0.12),
+            0 4px 8px rgba(0,0,0,0.04);
     }
 
     .pro-card-header {
@@ -64,155 +124,69 @@ st.markdown("""
         gap: 0.75rem;
         margin-bottom: 1.25rem;
         padding-bottom: 1rem;
-        border-bottom: 1px solid #e8ecf1;
+        border-bottom: 1px solid #fed7aa;
     }
 
     .pro-card-header h3 {
         margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1a202c;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1c1917;
+        letter-spacing: -0.02em;
     }
 
     .pro-card-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
-
-    .icon-blue { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); }
-    .icon-green { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
-    .icon-purple { background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%); }
-    .icon-orange { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); }
-
-    /* Task Input Area */
-    .task-input-container {
-        background: #f8fafc;
+        width: 42px;
+        height: 42px;
         border-radius: 12px;
-        padding: 1.25rem;
-        border: 2px dashed #cbd5e0;
-        transition: all 0.3s ease;
-    }
-
-    .task-input-container:hover {
-        border-color: #4299e1;
-        background: #f0f7ff;
-    }
-
-    /* Sample Task Chips */
-    .sample-chip {
-        display: inline-block;
-        background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
-        padding: 0.6rem 1rem;
-        border-radius: 25px;
-        font-size: 0.85rem;
-        color: #4a5568;
-        margin: 0.25rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: 1px solid #e2e8f0;
-    }
-
-    .sample-chip:hover {
-        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
-    }
-
-    /* Recent Task Item */
-    .recent-task-item {
-        display: flex;
-        align-items: center;
-        padding: 0.875rem 1rem;
-        background: #f8fafc;
-        border-radius: 10px;
-        margin-bottom: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: 1px solid transparent;
-    }
-
-    .recent-task-item:hover {
-        background: #edf2f7;
-        border-color: #4299e1;
-        transform: translateX(4px);
-    }
-
-    .recent-task-status {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 0.75rem;
-        font-size: 1rem;
+        font-size: 1.1rem;
+        color: white;
     }
 
-    .recent-task-info {
-        flex: 1;
-        overflow: hidden;
-    }
+    .icon-blue { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
+    .icon-green { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+    .icon-purple { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+    .icon-orange { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
 
-    .recent-task-title {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #2d3748;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .recent-task-meta {
-        font-size: 0.75rem;
-        color: #718096;
-    }
-
-    /* Status Badges */
+    /* ============================================
+       STATUS BADGES
+       ============================================ */
     .status-badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        font-size: 0.8rem;
+        gap: 0.375rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
     }
 
-    .status-pending { background: #edf2f7; color: #4a5568; }
-    .status-planning { background: #e6fffa; color: #234e52; }
-    .status-executing { background: #ebf8ff; color: #2b6cb0; }
-    .status-reviewing { background: #fefcbf; color: #975a16; }
-    .status-completed { background: #c6f6d5; color: #276749; }
-    .status-failed { background: #fed7d7; color: #c53030; }
+    .status-pending { background: #e7e5e4; color: #57534e; }
+    .status-planning { background: #fed7aa; color: #c2410c; }
+    .status-executing { background: #fde68a; color: #b45309; }
+    .status-reviewing { background: #fecaca; color: #b91c1c; }
+    .status-completed { background: #bbf7d0; color: #166534; }
+    .status-failed { background: #fecaca; color: #b91c1c; }
 
-    /* Progress Steps */
-    .progress-container {
-        display: flex;
-        justify-content: space-between;
-        position: relative;
-        margin: 1.5rem 0;
-    }
-
+    /* ============================================
+       PROGRESS STEPS
+       ============================================ */
     .progress-step {
         display: flex;
         flex-direction: column;
         align-items: center;
         flex: 1;
         position: relative;
-        z-index: 1;
     }
 
     .step-circle {
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -220,70 +194,67 @@ st.markdown("""
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .step-circle.pending {
-        background: #edf2f7;
-        color: #a0aec0;
-        border: 2px solid #e2e8f0;
+        background: #fafaf9;
+        color: #a8a29e;
+        border: 2px solid #e7e5e4;
     }
 
     .step-circle.active {
-        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
         color: white;
-        box-shadow: 0 4px 15px rgba(66, 153, 225, 0.5);
+        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
         animation: pulse 2s infinite;
     }
 
     .step-circle.completed {
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
         color: white;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
     }
 
     .step-label {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #718096;
+        color: #a8a29e;
     }
 
-    .step-label.active {
-        color: #3182ce;
-        font-weight: 600;
-    }
-
-    .step-label.completed {
-        color: #38a169;
-    }
+    .step-label.active { color: #ea580c; font-weight: 600; }
+    .step-label.completed { color: #16a34a; font-weight: 600; }
 
     @keyframes pulse {
-        0%, 100% { box-shadow: 0 4px 15px rgba(66, 153, 225, 0.5); }
-        50% { box-shadow: 0 4px 25px rgba(66, 153, 225, 0.8); }
+        0%, 100% { box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5); }
+        50% { box-shadow: 0 8px 30px rgba(249, 115, 22, 0.7); }
     }
 
-    /* Agent Messages */
+    /* ============================================
+       AGENT MESSAGES
+       ============================================ */
     .agent-message {
         padding: 1.25rem;
         margin: 0.75rem 0;
-        border-radius: 12px;
+        border-radius: 14px;
         border-left: 4px solid;
-        background: #ffffff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
     .agent-message.planner {
-        border-left-color: #48bb78;
-        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        border-left-color: #22c55e;
+        background: linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%);
     }
 
     .agent-message.executor {
-        border-left-color: #4299e1;
-        background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+        border-left-color: #f97316;
+        background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
     }
 
     .agent-message.reviewer {
-        border-left-color: #ed8936;
-        background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+        border-left-color: #f59e0b;
+        background: linear-gradient(135deg, #fffbeb 0%, #fde68a 100%);
     }
 
     .agent-header {
@@ -294,82 +265,351 @@ st.markdown("""
     }
 
     .agent-name {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1c1917;
+        font-size: 0.9rem;
+        letter-spacing: -0.01em;
     }
 
     .agent-content {
-        color: #4a5568;
-        font-size: 0.9rem;
-        line-height: 1.6;
+        color: #57534e;
+        font-size: 0.875rem;
+        line-height: 1.7;
         white-space: pre-wrap;
     }
 
-    /* Action Buttons */
-    .action-btn-group {
-        display: flex;
-        gap: 0.75rem;
-        margin: 1rem 0;
-    }
-
-    /* Output Section */
-    .output-section {
-        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
-        border-radius: 12px;
-        padding: 1.5rem;
-        border: 1px solid #e2e8f0;
-    }
-
-    .output-section h4 {
-        color: #2d3748;
-        margin: 0 0 1rem 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    /* Empty State */
+    /* ============================================
+       EMPTY STATE
+       ============================================ */
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
-        border-radius: 16px;
-        border: 2px dashed #cbd5e0;
+        background: white;
+        border-radius: 20px;
+        border: 2px dashed #fed7aa;
     }
 
     .empty-state h3 {
-        color: #4a5568;
+        color: #292524;
         margin: 1rem 0 0.5rem 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
     }
 
     .empty-state p {
-        color: #718096;
+        color: #78716c;
         margin: 0;
+        font-size: 0.95rem;
     }
 
     .empty-icon {
         font-size: 4rem;
-        opacity: 0.5;
+        opacity: 0.4;
     }
 
-    /* Modal styles */
+    /* ============================================
+       MODAL SECTION
+       ============================================ */
     .modal-section {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 1.25rem;
-        border: 1px solid #e2e8f0;
+        background: #fffbf5;
+        border-radius: 14px;
+        padding: 1.5rem;
+        border: 1px solid #fed7aa;
         margin: 1rem 0;
     }
 
     .modal-section h5 {
-        color: #2d3748;
+        color: #1c1917;
         margin: 0 0 1rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* ============================================
+       BUTTON OVERRIDES - ORANGE THEME
+       ============================================ */
+    .stButton > button {
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease !important;
+        border: none !important;
+        letter-spacing: -0.01em !important;
+    }
+
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+        color: white !important;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4) !important;
+    }
+
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5) !important;
+    }
+
+    .stButton > button[kind="secondary"] {
+        background: #fafaf9 !important;
+        color: #57534e !important;
+        border: 1px solid #e7e5e4 !important;
+    }
+
+    .stButton > button[kind="secondary"]:hover {
+        background: #f5f5f4 !important;
+    }
+
+    /* ============================================
+       INPUT OVERRIDES
+       ============================================ */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea {
+        border-radius: 12px !important;
+        border: 2px solid #fed7aa !important;
+        padding: 0.875rem 1rem !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease !important;
+        background-color: #fffbf5 !important;
+        color: #1c1917 !important;
+    }
+
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: #f97316 !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+        background-color: #ffffff !important;
+    }
+
+    .stTextInput > div > div > input::placeholder,
+    .stTextArea > div > div > textarea::placeholder {
+        color: #a8a29e !important;
+    }
+
+    /* Labels */
+    .stTextInput > label,
+    .stTextArea > label,
+    .stSelectbox > label,
+    .stMultiSelect > label {
+        color: #1c1917 !important;
+    }
+
+    /* All text elements */
+    p, span, div {
+        color: #1c1917;
+    }
+
+    .stMarkdown, .stMarkdown p {
+        color: #1c1917 !important;
+    }
+
+    /* Metric values */
+    [data-testid="stMetricValue"] {
+        color: #1c1917 !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #57534e !important;
+    }
+
+    /* Select boxes */
+    .stSelectbox > div > div {
+        background-color: #fffbf5 !important;
+        border: 2px solid #fed7aa !important;
+        border-radius: 12px !important;
+        color: #1c1917 !important;
+    }
+
+    /* Expander */
+    .streamlit-expanderHeader {
+        color: #1c1917 !important;
+        background-color: #fff7ed !important;
+    }
+
+    .streamlit-expanderContent {
+        color: #1c1917 !important;
+    }
+
+    /* Info/Warning/Error boxes */
+    .stAlert {
+        color: #1c1917 !important;
+    }
+
+    /* Progress bar */
+    .stProgress > div > div > div {
+        background-color: #fed7aa !important;
+    }
+
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #f97316, #ea580c) !important;
+    }
+
+    /* Spinner */
+    .stSpinner > div {
+        border-top-color: #f97316 !important;
+    }
+
+    /* Links */
+    a {
+        color: #ea580c !important;
+    }
+
+    /* Info/Warning boxes */
+    .stAlert {
+        border-radius: 12px !important;
+    }
+
+    div[data-testid="stAlert"] {
+        background-color: #fff7ed !important;
+        color: #1c1917 !important;
+    }
+
+    /* Selectbox */
+    [data-baseweb="select"] > div {
+        background-color: #fffbf5 !important;
+        border-color: #fed7aa !important;
+        border-radius: 12px !important;
+    }
+
+    [data-baseweb="popover"],
+    [data-baseweb="menu"] {
+        background-color: #fffbf5 !important;
+        border-radius: 12px !important;
+    }
+
+    [data-baseweb="menu"] li {
+        color: #1c1917 !important;
+    }
+
+    [data-baseweb="menu"] li:hover {
+        background-color: #fff7ed !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 init_session_state()
+
+
+def clean_task_output(review_result: str, execution_result: str = None) -> str:
+    """Parse and clean the task output to show only the final polished content."""
+    if not review_result and not execution_result:
+        return None
+
+    # Use execution_result as the main content
+    content = execution_result or ""
+
+    # If no execution result, try to extract useful content from review
+    if not content and review_result:
+        # Only use review if it has actual content beyond status markers
+        if "APPROVED" in review_result or "TASK_COMPLETE" in review_result:
+            content = execution_result or ""
+        else:
+            content = review_result
+
+    if not content:
+        return None
+
+    # Markers that indicate backend/internal content to remove
+    backend_markers = [
+        "TASK_COMPLETE", "EXECUTION_COMPLETE", "PLAN_COMPLETE", "NEEDS_REVISION",
+        "APPROVED", "Status: Complete", "Status: Incomplete", "Quality: Excellent",
+        "Quality: Good", "Quality: Fair", "Quality: Poor", "Final Verdict",
+        "Issues Found", "Detailed Review", "Review Summary", "Plan Coverage:",
+        "Original Objective:", "Task Analysis", "Subtasks Completion Summary",
+        "Execution Order", "Dependencies:", "Expected Output:", "Priority:",
+        "### Executing:", "**Approach:**", "Approach:"
+    ]
+
+    # Section headers to skip entirely
+    skip_sections = [
+        "Review Summary", "Detailed Review", "Issues Found", "Final Verdict",
+        "Task Analysis", "Subtasks Completion Summary", "Execution Order"
+    ]
+
+    cleaned_lines = []
+    skip_until_next_section = False
+    in_notes_section = False
+
+    lines = content.split('\n')
+
+    for i, line in enumerate(lines):
+        line_stripped = line.strip()
+
+        # Skip empty lines at the start
+        if not cleaned_lines and not line_stripped:
+            continue
+
+        # Check if we should skip this section entirely
+        should_skip_section = False
+        for section in skip_sections:
+            if section in line_stripped and (line_stripped.startswith('#') or line_stripped.startswith('**')):
+                skip_until_next_section = True
+                should_skip_section = True
+                break
+
+        if should_skip_section:
+            continue
+
+        # Reset skip flag on new major section
+        if line_stripped.startswith('## ') or line_stripped.startswith('### '):
+            skip_until_next_section = False
+
+        if skip_until_next_section:
+            continue
+
+        # Skip lines with backend markers
+        should_skip = False
+        for marker in backend_markers:
+            if marker in line_stripped:
+                should_skip = True
+                break
+
+        # Skip subtask metadata lines
+        if line_stripped.startswith("Subtask ") and any(x in line_stripped for x in ["Status:", "Quality:", "Priority:", "Dependencies:"]):
+            should_skip = True
+
+        # Skip "Notes:" lines that look internal
+        if line_stripped.startswith("Notes:") or line_stripped == "**Notes:**":
+            in_notes_section = True
+            should_skip = True
+
+        # Skip lines in notes sections that are short (internal notes)
+        if in_notes_section:
+            if line_stripped.startswith('-') and len(line_stripped) < 150:
+                should_skip = True
+            elif line_stripped == "" or line_stripped.startswith('#') or line_stripped.startswith('**'):
+                in_notes_section = False
+
+        # Skip "---" separators
+        if line_stripped == "---":
+            should_skip = True
+
+        # Skip repeated completion markers
+        if line_stripped in ["EXECUTION_COMPLETE", "PLAN_COMPLETE", "TASK_COMPLETE"]:
+            should_skip = True
+
+        if not should_skip:
+            cleaned_lines.append(line)
+
+    # Join and clean up
+    result = '\n'.join(cleaned_lines).strip()
+
+    # Remove multiple consecutive newlines
+    while '\n\n\n' in result:
+        result = result.replace('\n\n\n', '\n\n')
+
+    # Remove any remaining backend markers that might have slipped through
+    for marker in ["EXECUTION_COMPLETE", "PLAN_COMPLETE", "TASK_COMPLETE", "APPROVED", "NEEDS_REVISION"]:
+        result = result.replace(marker, "")
+
+    # Clean up any leftover artifacts
+    result = result.strip()
+
+    # If result is too short or empty, return None
+    if not result or len(result) < 50:
+        return None
+
+    return result
 
 
 def render_auth_required():
@@ -551,12 +791,12 @@ def render_dashboard():
         if result["success"] and result["data"]:
             for task in result["data"]:
                 status_colors = {
-                    "pending": "#718096",
-                    "planning": "#38a169",
-                    "executing": "#3182ce",
-                    "reviewing": "#d69e2e",
-                    "completed": "#38a169",
-                    "failed": "#e53e3e"
+                    "pending": "#78716c",
+                    "planning": "#f97316",
+                    "executing": "#f59e0b",
+                    "reviewing": "#ef4444",
+                    "completed": "#22c55e",
+                    "failed": "#dc2626"
                 }
                 status_emoji = {
                     "pending": "⏳",
@@ -750,34 +990,41 @@ def render_dashboard():
 
                     st.markdown("</div>", unsafe_allow_html=True)
 
-                    # Output Section
+                    # Output Section - Clean Final Result Only
                     st.markdown("""
                     <div class="pro-card">
                         <div class="pro-card-header">
                             <div class="pro-card-icon icon-green">📊</div>
-                            <h3>Task Output</h3>
+                            <h3>Your Results</h3>
                         </div>
                     """, unsafe_allow_html=True)
 
-                    if task.get("review_result"):
-                        st.markdown(task["review_result"])
+                    # Get clean output - prioritize execution result
+                    clean_output = clean_task_output(
+                        task.get("review_result", ""),
+                        task.get("execution_result", "")
+                    )
+
+                    if clean_output:
+                        # Display clean output with nice formatting
+                        st.markdown(clean_output)
+                    else:
+                        # Fallback - show a summary message
+                        st.markdown(f"""
+                        <div style="
+                            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+                            border: 1px solid #bbf7d0;
+                            border-radius: 12px;
+                            padding: 1.25rem;
+                            color: #1c1917;
+                            text-align: center;
+                        ">
+                            <p style="font-size: 1.1rem; margin: 0;">✅ Task completed successfully!</p>
+                            <p style="color: #57534e; margin: 0.5rem 0 0 0;">Your task "{task['objective'][:50]}..." has been processed.</p>
+                        </div>
+                        """, unsafe_allow_html=True)
 
                     st.markdown("</div>", unsafe_allow_html=True)
-
-                    # Detailed Results
-                    st.markdown("##### 📁 Detailed Results")
-
-                    if task.get("plan"):
-                        with st.expander("📋 View Plan", expanded=False):
-                            st.markdown(task["plan"])
-
-                    if task.get("execution_result"):
-                        with st.expander("⚡ View Execution Details", expanded=False):
-                            st.markdown(task["execution_result"])
-
-                    if task.get("messages"):
-                        with st.expander("💬 View Agent Conversation", expanded=False):
-                            render_agent_messages(task["messages"])
 
                 elif task["status"] == "failed":
                     st.error("❌ Task failed to complete")

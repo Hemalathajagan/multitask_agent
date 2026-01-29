@@ -14,52 +14,73 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS
+# Custom CSS - Warm Orange Theme
 st.markdown("""
 <style>
-    /* Hide default Streamlit page navigation */
+    /* Hide Streamlit defaults but keep sidebar toggle */
     [data-testid="stSidebarNav"] { display: none !important; }
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+    [data-testid="stToolbar"] { visibility: hidden; }
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        height: 0 !important;
+        min-height: 0 !important;
+    }
+
+    /* Hide sidebar collapse/expand buttons */
+    [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebar"] button[kind="header"],
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+
+    .stApp {
+        background: linear-gradient(180deg, #fffbf5 0%, #fef7ed 100%);
+    }
 
     .guide-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%);
         padding: 2rem;
-        border-radius: 12px;
+        border-radius: 20px;
         color: white;
         margin-bottom: 2rem;
         text-align: center;
+        box-shadow: 0 20px 40px rgba(234, 88, 12, 0.3);
     }
 
     .step-card {
         background: white;
         padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 14px;
+        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.08);
         margin-bottom: 1rem;
         border-left: 4px solid;
     }
 
     .step-card h4 {
-        color: #1a202c !important;
+        color: #1c1917 !important;
         margin-bottom: 0.5rem;
     }
 
     .step-card p {
-        color: #4a5568 !important;
+        color: #57534e !important;
         margin: 0;
     }
 
-    .step-card.step-1 { border-left-color: #667eea; }
-    .step-card.step-2 { border-left-color: #48bb78; }
-    .step-card.step-3 { border-left-color: #ed8936; }
-    .step-card.step-4 { border-left-color: #e53e3e; }
+    .step-card.step-1 { border-left-color: #f97316; }
+    .step-card.step-2 { border-left-color: #22c55e; }
+    .step-card.step-3 { border-left-color: #f59e0b; }
+    .step-card.step-4 { border-left-color: #ef4444; }
 
     .agent-card {
         background: white;
         padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 14px;
+        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.08);
         text-align: center;
         height: 100%;
+        border: 1px solid rgba(234, 88, 12, 0.08);
     }
 
     .agent-icon {
@@ -70,59 +91,104 @@ st.markdown("""
     .agent-title {
         font-size: 1.3rem;
         font-weight: 600;
-        color: #1a202c;
+        color: #1c1917;
         margin-bottom: 0.5rem;
     }
 
     .agent-desc {
-        color: #4a5568;
+        color: #57534e;
         font-size: 0.95rem;
     }
 
     .feature-box {
-        background: #f7fafc;
+        background: #fff7ed;
         padding: 1rem;
-        border-radius: 8px;
+        border-radius: 10px;
         margin: 0.5rem 0;
+        border: 1px solid #fed7aa;
     }
 
     .feature-box strong {
-        color: #1a202c;
+        color: #1c1917;
     }
 
     .tip-box {
-        background: #ebf8ff;
-        border-left: 4px solid #4299e1;
+        background: linear-gradient(135deg, #fff7ed, #ffedd5);
+        border-left: 4px solid #f97316;
         padding: 1rem;
-        border-radius: 0 8px 8px 0;
+        border-radius: 0 10px 10px 0;
         margin: 1rem 0;
     }
 
     .tip-box strong {
-        color: #1a202c !important;
+        color: #1c1917 !important;
     }
 
     .tip-box br + * {
-        color: #2d3748 !important;
+        color: #292524 !important;
     }
 
     .warning-box {
-        background: #fffaf0;
-        border-left: 4px solid #ed8936;
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        border-left: 4px solid #f59e0b;
         padding: 1rem;
-        border-radius: 0 8px 8px 0;
+        border-radius: 0 10px 10px 0;
         margin: 1rem 0;
     }
 
     .warning-box strong {
-        color: #1a202c !important;
+        color: #1c1917 !important;
     }
 
     .section-title {
-        color: #1a202c;
-        border-bottom: 2px solid #e2e8f0;
+        color: #1c1917;
+        border-bottom: 2px solid #fed7aa;
         padding-bottom: 0.5rem;
         margin-top: 2rem;
+    }
+
+    /* Button overrides */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+        border: none !important;
+        color: white !important;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4) !important;
+        border-radius: 12px !important;
+    }
+
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5) !important;
+    }
+
+    /* All text elements */
+    p, span, div {
+        color: #1c1917;
+    }
+
+    .stMarkdown, .stMarkdown p {
+        color: #1c1917 !important;
+    }
+
+    /* Expander */
+    .streamlit-expanderHeader {
+        color: #1c1917 !important;
+        background-color: #fff7ed !important;
+    }
+
+    .streamlit-expanderContent {
+        color: #1c1917 !important;
+    }
+
+    /* Table text */
+    table, th, td {
+        color: #1c1917 !important;
+    }
+
+    /* Code blocks */
+    code, pre {
+        color: #1c1917 !important;
+        background-color: #fff7ed !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -143,7 +209,7 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.markdown("""
     <a href="#what-is-this" style="text-decoration:none;">
-        <div style="background:#667eea;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+        <div style="background:linear-gradient(135deg, #f97316, #ea580c);color:white;padding:0.5rem 1rem;border-radius:10px;text-align:center;font-weight:500;box-shadow:0 4px 12px rgba(249,115,22,0.3);">
             What is this?
         </div>
     </a>
@@ -151,7 +217,7 @@ with col1:
 with col2:
     st.markdown("""
     <a href="#how-to-use" style="text-decoration:none;">
-        <div style="background:#48bb78;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+        <div style="background:linear-gradient(135deg, #22c55e, #16a34a);color:white;padding:0.5rem 1rem;border-radius:10px;text-align:center;font-weight:500;box-shadow:0 4px 12px rgba(34,197,94,0.3);">
             How to Use
         </div>
     </a>
@@ -159,7 +225,7 @@ with col2:
 with col3:
     st.markdown("""
     <a href="#the-agents" style="text-decoration:none;">
-        <div style="background:#ed8936;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+        <div style="background:linear-gradient(135deg, #f59e0b, #d97706);color:white;padding:0.5rem 1rem;border-radius:10px;text-align:center;font-weight:500;box-shadow:0 4px 12px rgba(245,158,11,0.3);">
             The Agents
         </div>
     </a>
@@ -167,7 +233,7 @@ with col3:
 with col4:
     st.markdown("""
     <a href="#tips-tricks" style="text-decoration:none;">
-        <div style="background:#e53e3e;color:white;padding:0.5rem 1rem;border-radius:8px;text-align:center;font-weight:500;">
+        <div style="background:linear-gradient(135deg, #ef4444, #dc2626);color:white;padding:0.5rem 1rem;border-radius:10px;text-align:center;font-weight:500;box-shadow:0 4px 12px rgba(239,68,68,0.3);">
             Tips & Tricks
         </div>
     </a>

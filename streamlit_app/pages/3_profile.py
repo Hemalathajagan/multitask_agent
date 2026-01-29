@@ -19,36 +19,85 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS
+# Professional CSS - Warm Orange Theme
 st.markdown("""
 <style>
-    /* Hide default Streamlit page navigation */
-    [data-testid="stSidebarNav"] { display: none !important; }
+    /* ============================================
+       RESET & BASE STYLES - WARM ORANGE THEME
+       ============================================ */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+    /* Hide Streamlit defaults but keep sidebar toggle */
+    [data-testid="stSidebarNav"] { display: none !important; }
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+    [data-testid="stToolbar"] { visibility: hidden; }
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        height: 0 !important;
+        min-height: 0 !important;
+    }
+
+    /* Hide sidebar collapse/expand buttons */
+    [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebar"] button[kind="header"],
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+
+    /* Base font */
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .stApp {
+        background: linear-gradient(180deg, #fffbf5 0%, #fef7ed 100%);
+    }
+
+    /* ============================================
+       PROFILE HEADER - WARM CORAL
+       ============================================ */
     .profile-header {
-        background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-        padding: 2rem;
-        border-radius: 12px;
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f87171 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
         color: white;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+            0 20px 40px rgba(220, 38, 38, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 60%;
+        height: 200%;
+        background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
+        pointer-events: none;
     }
 
     .profile-avatar-large {
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         background: white;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1rem auto;
-        font-size: 3rem;
-        color: #ed8936;
+        font-size: 2.5rem;
+        color: #ef4444;
         font-weight: bold;
         overflow: hidden;
-        border: 4px solid white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        position: relative;
     }
 
     .profile-avatar-large img {
@@ -57,44 +106,96 @@ st.markdown("""
         object-fit: cover;
     }
 
-    .profile-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1.5rem;
+    .profile-header h1 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.75rem;
+        font-weight: 800;
+        position: relative;
+        letter-spacing: -0.03em;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .profile-card h3 {
-        color: #2d3748;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e2e8f0;
+    .profile-header p {
+        margin: 0;
+        opacity: 0.95;
+        font-size: 0.95rem;
+        position: relative;
     }
 
+    /* ============================================
+       STAT BOXES
+       ============================================ */
     .stat-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: white;
         padding: 1.5rem;
-        border-radius: 10px;
-        color: white;
+        border-radius: 16px;
         text-align: center;
+        border: 1px solid rgba(234, 88, 12, 0.08);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(234, 88, 12, 0.06);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-box:hover {
+        box-shadow: 0 8px 24px rgba(234, 88, 12, 0.12);
+        transform: translateY(-4px);
     }
 
     .stat-box h2 {
         margin: 0;
-        font-size: 2.5rem;
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: #1c1917;
+        letter-spacing: -0.03em;
     }
 
     .stat-box p {
         margin: 0.5rem 0 0 0;
-        opacity: 0.9;
+        color: #78716c;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
+    .stat-box.accent {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+    }
+
+    .stat-box.accent h2,
+    .stat-box.accent p {
+        color: white;
+    }
+
+    .stat-box.success {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+    }
+
+    .stat-box.success h2,
+    .stat-box.success p {
+        color: white;
+    }
+
+    .stat-box.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+    }
+
+    .stat-box.warning h2,
+    .stat-box.warning p {
+        color: white;
+    }
+
+    /* ============================================
+       INFO ITEMS
+       ============================================ */
     .info-item {
         display: flex;
         justify-content: space-between;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e2e8f0;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #fed7aa;
     }
 
     .info-item:last-child {
@@ -102,46 +203,158 @@ st.markdown("""
     }
 
     .info-label {
-        font-weight: 600;
-        color: #4a5568;
+        font-weight: 500;
+        color: #78716c;
+        font-size: 0.9rem;
     }
 
     .info-value {
-        color: #2d3748;
+        color: #1c1917;
+        font-weight: 600;
+        font-size: 0.9rem;
     }
 
-    .photo-upload-area {
-        border: 2px dashed #cbd5e0;
-        border-radius: 12px;
-        padding: 2rem;
-        text-align: center;
-        background: #f7fafc;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .photo-upload-area:hover {
-        border-color: #667eea;
-        background: #ebf4ff;
-    }
-
+    /* ============================================
+       SECURITY TIP
+       ============================================ */
     .security-tip {
-        background: #ebf8ff;
-        border-left: 4px solid #4299e1;
-        padding: 1rem;
-        border-radius: 0 8px 8px 0;
+        background: linear-gradient(135deg, #fff7ed, #ffedd5);
+        border-left: 4px solid #f97316;
+        padding: 1.25rem;
+        border-radius: 0 14px 14px 0;
         margin-top: 1rem;
     }
 
     .security-tip h4 {
-        color: #2b6cb0;
+        color: #c2410c;
         margin: 0 0 0.5rem 0;
+        font-size: 0.9rem;
+        font-weight: 600;
     }
 
     .security-tip p {
-        color: #4a5568;
+        color: #57534e;
         margin: 0;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+    /* ============================================
+       BUTTON OVERRIDES - ORANGE THEME
+       ============================================ */
+    .stButton > button {
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease !important;
+        border: none !important;
+        letter-spacing: -0.01em !important;
+    }
+
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+        color: white !important;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4) !important;
+    }
+
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5) !important;
+    }
+
+    .stButton > button[kind="secondary"] {
+        background: #fafaf9 !important;
+        color: #57534e !important;
+        border: 1px solid #e7e5e4 !important;
+    }
+
+    /* ============================================
+       INPUT OVERRIDES
+       ============================================ */
+    .stTextInput > div > div > input {
+        border-radius: 12px !important;
+        border: 2px solid #fed7aa !important;
+        padding: 0.875rem 1rem !important;
+        transition: all 0.2s ease !important;
+        background-color: #fffbf5 !important;
+        color: #1c1917 !important;
+    }
+
+    .stTextInput > div > div > input:focus {
+        border-color: #f97316 !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+        background-color: #ffffff !important;
+    }
+
+    .stTextInput > div > div > input::placeholder {
+        color: #a8a29e !important;
+    }
+
+    /* Labels */
+    .stTextInput > label,
+    .stFileUploader > label {
+        color: #1c1917 !important;
+    }
+
+    /* All text elements */
+    p, span, div {
+        color: #1c1917;
+    }
+
+    .stMarkdown, .stMarkdown p {
+        color: #1c1917 !important;
+    }
+
+    /* Expander */
+    .streamlit-expanderHeader {
+        color: #1c1917 !important;
+        background-color: #fff7ed !important;
+    }
+
+    .streamlit-expanderContent {
+        color: #1c1917 !important;
+    }
+
+    /* ============================================
+       FILE UPLOADER
+       ============================================ */
+    .stFileUploader > div {
+        border-radius: 14px !important;
+        background-color: #fffbf5 !important;
+        border: 2px dashed #fed7aa !important;
+    }
+
+    .stFileUploader > div > div {
+        color: #1c1917 !important;
+    }
+
+    /* Hide file uploader preview (filename and image) */
+    .stFileUploader [data-testid="stFileUploaderFile"] {
+        display: none !important;
+    }
+
+    /* Form submit button text */
+    .stFormSubmitButton > button {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4) !important;
+    }
+
+    .stFormSubmitButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5) !important;
+    }
+
+    /* Links */
+    a {
+        color: #ea580c !important;
+    }
+
+    /* Progress bar */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #f97316, #ea580c) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -200,7 +413,7 @@ def render_profile():
 
     with col1:
         st.markdown(f"""
-        <div class="stat-box">
+        <div class="stat-box accent">
             <h2>{total_tasks}</h2>
             <p>Total Tasks</p>
         </div>
@@ -208,7 +421,7 @@ def render_profile():
 
     with col2:
         st.markdown(f"""
-        <div class="stat-box" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+        <div class="stat-box success">
             <h2>{completed_tasks}</h2>
             <p>Completed</p>
         </div>
@@ -217,7 +430,7 @@ def render_profile():
     with col3:
         success_rate = int((completed_tasks / total_tasks * 100)) if total_tasks > 0 else 0
         st.markdown(f"""
-        <div class="stat-box" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);">
+        <div class="stat-box warning">
             <h2>{success_rate}%</h2>
             <p>Success Rate</p>
         </div>
@@ -241,7 +454,7 @@ def render_profile():
                 width: 150px;
                 height: 150px;
                 border-radius: 50%;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -268,9 +481,6 @@ def render_profile():
             if uploaded_file.size > 2 * 1024 * 1024:
                 st.error("File too large. Max size is 2MB")
             else:
-                # Preview
-                st.image(uploaded_file, width=100, caption="Preview")
-
                 if st.button("💾 Save Photo", use_container_width=True):
                     with st.spinner("Uploading..."):
                         # Convert to base64
@@ -305,22 +515,22 @@ def render_profile():
             new_email = st.text_input(
                 "Email",
                 value=user["email"],
-                help="Your email address"
+                help="Your email address",
+                disabled=True
             )
 
             submitted = st.form_submit_button("💾 Save Changes", use_container_width=True)
 
             if submitted:
                 username_changed = new_username != user["username"]
-                email_changed = new_email != user["email"]
 
-                if not username_changed and not email_changed:
+                if not username_changed:
                     st.info("No changes to save")
                 else:
                     with st.spinner("Updating profile..."):
                         result = sync_update_profile(
                             username=new_username if username_changed else None,
-                            email=new_email if email_changed else None
+                            email=None
                         )
 
                     if result["success"]:
@@ -329,32 +539,6 @@ def render_profile():
                     else:
                         st.error(result["error"])
 
-        # Account Details
-        st.markdown("---")
-        st.markdown("##### 📋 Account Details")
-
-        created_date = user.get('created_at', '')
-        if created_date:
-            created_date = created_date[:10] if isinstance(created_date, str) else str(created_date)[:10]
-
-        st.markdown(f"""
-        <div class="info-item">
-            <span class="info-label">User ID</span>
-            <span class="info-value">#{user['id']}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Member Since</span>
-            <span class="info-value">{created_date or 'N/A'}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Tasks Created</span>
-            <span class="info-value">{total_tasks}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Tasks Completed</span>
-            <span class="info-value">{completed_tasks}</span>
-        </div>
-        """, unsafe_allow_html=True)
 
     with col3:
         # Change Password Card
@@ -405,14 +589,11 @@ def render_profile():
         </div>
         """, unsafe_allow_html=True)
 
-    # Danger Zone
+    # Logout Button
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("---")
-
-    with st.expander("⚠️ Danger Zone", expanded=False):
-        st.warning("These actions are irreversible.")
-
-        if st.button("🚪 Logout", use_container_width=True):
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("🚪 Logout", use_container_width=True, type="secondary"):
             sync_logout()
             clear_authentication()
             st.success("Logged out!")
