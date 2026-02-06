@@ -17,6 +17,7 @@ class APIClient:
     def __init__(self):
         self.base_url = API_BASE_URL
         self.token: Optional[str] = None
+        self.timeout = 60.0  # 60 seconds for Render cold starts
 
     def set_token(self, token: str):
         self.token = token
@@ -28,7 +29,7 @@ class APIClient:
         return headers
 
     async def register(self, email: str, username: str, password: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/auth/register",
                 json={"email": email, "username": username, "password": password},
@@ -39,7 +40,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Registration failed")}
 
     async def login(self, email: str, password: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/auth/login",
                 json={"email": email, "password": password},
@@ -52,7 +53,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Login failed")}
 
     async def logout(self) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/auth/logout",
                 headers=self._get_headers(),
@@ -61,7 +62,7 @@ class APIClient:
             return {"success": True}
 
     async def get_me(self) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.get(
                 f"{self.base_url}/auth/me",
                 headers=self._get_headers(),
@@ -71,7 +72,7 @@ class APIClient:
             return {"success": False, "error": "Not authenticated"}
 
     async def create_task(self, objective: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/tasks/",
                 json={"objective": objective},
@@ -83,7 +84,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Failed to create task")}
 
     async def get_tasks(self, limit: int = 50) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.get(
                 f"{self.base_url}/tasks/",
                 params={"limit": limit},
@@ -94,7 +95,7 @@ class APIClient:
             return {"success": False, "error": "Failed to fetch tasks"}
 
     async def get_task(self, task_id: int) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.get(
                 f"{self.base_url}/tasks/{task_id}",
                 headers=self._get_headers(),
@@ -104,7 +105,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Failed to fetch task")}
 
     async def rename_task(self, task_id: int, objective: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.put(
                 f"{self.base_url}/tasks/{task_id}",
                 json={"objective": objective},
@@ -115,7 +116,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Failed to rename task")}
 
     async def rerun_task(self, task_id: int) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/tasks/{task_id}/rerun",
                 headers=self._get_headers(),
@@ -126,7 +127,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Failed to rerun task")}
 
     async def continue_task(self, task_id: int, objective: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/tasks/{task_id}/continue",
                 json={"objective": objective},
@@ -138,7 +139,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Failed to continue task")}
 
     async def update_profile(self, username: str = None, email: str = None) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             data = {}
             if username:
                 data["username"] = username
@@ -155,7 +156,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Failed to update profile")}
 
     async def change_password(self, current_password: str, new_password: str, confirm_password: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.put(
                 f"{self.base_url}/auth/password",
                 json={
@@ -170,7 +171,7 @@ class APIClient:
             return {"success": False, "error": _safe_json_error(response, "Failed to change password")}
 
     async def update_photo(self, profile_photo: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.put(
                 f"{self.base_url}/auth/photo",
                 json={"profile_photo": profile_photo},
