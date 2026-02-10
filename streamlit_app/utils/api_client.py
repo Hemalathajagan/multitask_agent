@@ -29,28 +29,40 @@ class APIClient:
         return headers
 
     async def register(self, email: str, username: str, password: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.post(
-                f"{self.base_url}/auth/register",
-                json={"email": email, "username": username, "password": password},
-                headers=self._get_headers(),
-            )
-            if response.status_code == 201:
-                return {"success": True, "data": response.json()}
-            return {"success": False, "error": _safe_json_error(response, "Registration failed")}
+        for attempt in range(3):
+            try:
+                async with httpx.AsyncClient(timeout=120.0) as client:
+                    response = await client.post(
+                        f"{self.base_url}/auth/register",
+                        json={"email": email, "username": username, "password": password},
+                        headers=self._get_headers(),
+                    )
+                    if response.status_code == 201:
+                        return {"success": True, "data": response.json()}
+                    return {"success": False, "error": _safe_json_error(response, "Registration failed")}
+            except httpx.ReadTimeout:
+                if attempt < 2:
+                    continue
+                return {"success": False, "error": "Server is starting up. Please try again in a moment."}
 
     async def login(self, email: str, password: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.post(
-                f"{self.base_url}/auth/login",
-                json={"email": email, "password": password},
-                headers=self._get_headers(),
-            )
-            if response.status_code == 200:
-                data = response.json()
-                self.token = data["access_token"]
-                return {"success": True, "data": data}
-            return {"success": False, "error": _safe_json_error(response, "Login failed")}
+        for attempt in range(3):
+            try:
+                async with httpx.AsyncClient(timeout=120.0) as client:
+                    response = await client.post(
+                        f"{self.base_url}/auth/login",
+                        json={"email": email, "password": password},
+                        headers=self._get_headers(),
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        self.token = data["access_token"]
+                        return {"success": True, "data": data}
+                    return {"success": False, "error": _safe_json_error(response, "Login failed")}
+            except httpx.ReadTimeout:
+                if attempt < 2:
+                    continue
+                return {"success": False, "error": "Server is starting up. Please try again in a moment."}
 
     async def logout(self) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -193,13 +205,19 @@ def get_api_client() -> APIClient:
 def sync_register(email: str, username: str, password: str) -> Dict[str, Any]:
     import asyncio
     client = get_api_client()
-    return asyncio.run(client.register(email, username, password))
+    try:
+        return asyncio.run(client.register(email, username, password))
+    except (httpx.ReadTimeout, httpx.ConnectTimeout, httpx.TimeoutException):
+        return {"success": False, "error": "Server is starting up. Please try again in a moment."}
 
 
 def sync_login(email: str, password: str) -> Dict[str, Any]:
     import asyncio
     client = get_api_client()
-    result = asyncio.run(client.login(email, password))
+    try:
+        result = asyncio.run(client.login(email, password))
+    except (httpx.ReadTimeout, httpx.ConnectTimeout, httpx.TimeoutException):
+        return {"success": False, "error": "Server is starting up. Please try again in a moment."}
     if result["success"]:
         st.session_state.token = client.token
     return result
