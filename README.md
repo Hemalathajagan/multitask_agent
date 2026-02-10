@@ -7,6 +7,49 @@ A powerful AI-powered task management system that uses three coordinated agents 
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.31+-red.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+## What is This?
+
+This is a **specialized AI-powered task automation tool** that uses **3 coordinated AI agents** to automatically plan, execute, and review any task you give it.
+
+You provide a high-level objective (e.g., *"Create a marketing plan for a mobile app"*), and three agents take over:
+
+1. **Planner Agent** — Breaks the objective into subtasks with priorities and dependencies
+2. **Executor Agent** — Executes each subtask and produces detailed outputs
+3. **Reviewer Agent** — Validates the work, checks quality, and approves or requests revisions
+
+### Target Users
+
+Knowledge workers, researchers, content creators, and analysts who want to automate multi-step projects — instead of doing planning, execution, and review manually, the AI agents handle the entire workflow.
+
+## How is This Different from ChatGPT?
+
+| Aspect | ChatGPT (Single Agent) | This Project (Multi-Agent) |
+|--------|----------------------|---------------------------|
+| **Architecture** | One AI handles everything in a single response | Three specialized AIs collaborate on each task |
+| **Quality Control** | No self-review — you catch mistakes | Reviewer agent checks quality before you see the output |
+| **Workflow** | One-shot text generation | Structured Plan → Execute → Review pipeline |
+| **Iteration** | You manually ask "try again" | Reviewer automatically sends work back for revision |
+| **Persistence** | Chat logs only | Tasks saved in database — re-run, continue, review history |
+| **Real-time Tracking** | Not applicable | Watch each agent work live via WebSockets |
+
+### When This Project is Better Than ChatGPT
+
+- **Complex multi-step tasks** (research plans, strategies, reports) — structured planning + self-review catches gaps
+- **Tasks needing quality assurance** — the Reviewer agent forces quality improvement automatically
+- **Repeatable workflows** — re-run or continue tasks with stored history
+
+### When ChatGPT is Better
+
+- Simple questions and quick answers
+- Casual conversation
+- General-purpose tasks that don't need structured workflows
+
+### The Honest Take
+
+This project calls the **same underlying model** (GPT-4o-mini). The raw intelligence is identical. The advantage comes from the **workflow** — multiple passes, specialized roles, and self-review. It's like giving the same employee a checklist and a reviewer vs. asking them to do everything in one go.
+
+> **Think of it this way:** ChatGPT = one person doing everything alone. This project = a team of 3 specialists (project manager, worker, quality reviewer) collaborating on your task.
+
 ## Features
 
 - **Multi-Agent AI Workflow**
