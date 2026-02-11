@@ -83,11 +83,14 @@ class APIClient:
                 return {"success": True, "data": response.json()}
             return {"success": False, "error": "Not authenticated"}
 
-    async def create_task(self, objective: str) -> Dict[str, Any]:
+    async def create_task(self, objective: str, scheduled_for: str = None) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=self.timeout) as client:
+            payload = {"objective": objective}
+            if scheduled_for:
+                payload["scheduled_for"] = scheduled_for
             response = await client.post(
                 f"{self.base_url}/tasks/",
-                json={"objective": objective},
+                json=payload,
                 headers=self._get_headers(),
                 timeout=30.0,
             )
@@ -182,6 +185,41 @@ class APIClient:
                 return {"success": True, "data": response.json()}
             return {"success": False, "error": _safe_json_error(response, "Failed to change password")}
 
+    async def get_scheduled_tasks(self) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.get(
+                f"{self.base_url}/tasks/scheduled/list",
+                headers=self._get_headers(),
+            )
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": "Failed to fetch scheduled tasks"}
+
+    async def cancel_schedule(self, task_id: int) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.post(
+                f"{self.base_url}/tasks/{task_id}/cancel-schedule",
+                headers=self._get_headers(),
+            )
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": _safe_json_error(response, "Failed to cancel schedule")}
+
+    async def upload_file(self, task_id: int, file_bytes: bytes, filename: str) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            headers = {}
+            if self.token:
+                headers["Authorization"] = f"Bearer {self.token}"
+            response = await client.post(
+                f"{self.base_url}/files/upload/{task_id}",
+                files={"file": (filename, file_bytes)},
+                headers=headers,
+                timeout=60.0,
+            )
+            if response.status_code == 201:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": _safe_json_error(response, "Failed to upload file")}
+
     async def get_pending_interaction(self, task_id: int) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.get(
@@ -261,12 +299,12 @@ def sync_get_me() -> Dict[str, Any]:
     return asyncio.run(client.get_me())
 
 
-def sync_create_task(objective: str) -> Dict[str, Any]:
+def sync_create_task(objective: str, scheduled_for: str = None) -> Dict[str, Any]:
     import asyncio
     client = get_api_client()
     if "token" in st.session_state:
         client.set_token(st.session_state.token)
-    return asyncio.run(client.create_task(objective))
+    return asyncio.run(client.create_task(objective, scheduled_for))
 
 
 def sync_get_tasks(limit: int = 50) -> Dict[str, Any]:
@@ -331,6 +369,30 @@ def sync_update_photo(profile_photo: str) -> Dict[str, Any]:
     if "token" in st.session_state:
         client.set_token(st.session_state.token)
     return asyncio.run(client.update_photo(profile_photo))
+
+
+def sync_get_scheduled_tasks() -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.get_scheduled_tasks())
+
+
+def sync_cancel_schedule(task_id: int) -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.cancel_schedule(task_id))
+
+
+def sync_upload_file(task_id: int, file_bytes: bytes, filename: str) -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.upload_file(task_id, file_bytes, filename))
 
 
 def sync_get_pending_interaction(task_id: int) -> Dict[str, Any]:

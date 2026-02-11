@@ -33,6 +33,12 @@ playwright>=1.40.0
 pyautogui>=0.9.54
 Pillow>=10.0.0
 
+# Scheduling
+apscheduler>=3.10.0
+
+# Excel
+openpyxl>=3.1.0
+
 # Config
 pydantic>=2.6.0
 pydantic-settings>=2.1.0

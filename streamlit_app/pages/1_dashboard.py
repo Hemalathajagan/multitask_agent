@@ -6,12 +6,17 @@ from streamlit_autorefresh import st_autorefresh
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from datetime import datetime, timedelta
+
 from streamlit_app.utils import (
     init_session_state, is_authenticated,
     sync_get_task, sync_get_tasks, sync_create_task,
     sync_rename_task, sync_rerun_task, sync_continue_task
 )
-from streamlit_app.utils.api_client import sync_get_pending_interaction, sync_respond_to_interaction
+from streamlit_app.utils.api_client import (
+    sync_get_pending_interaction, sync_respond_to_interaction,
+    sync_cancel_schedule, sync_upload_file
+)
 from streamlit_app.components import render_login_form, render_register_form, render_sidebar
 
 st.set_page_config(
@@ -174,6 +179,7 @@ st.markdown("""
     .status-completed { background: #bbf7d0; color: #166534; }
     .status-failed { background: #fecaca; color: #b91c1c; }
     .status-awaiting_input { background: #dbeafe; color: #1d4ed8; }
+    .status-scheduled { background: #e0e7ff; color: #4338ca; }
 
     /* ============================================
        PROGRESS STEPS
@@ -637,6 +643,7 @@ def render_progress_steps(status: str):
 
     status_map = {
         "pending": 0,
+        "scheduled": 0,
         "planning": 1,
         "executing": 2,
         "awaiting_input": 2,
@@ -742,17 +749,58 @@ def render_dashboard():
             label_visibility="collapsed"
         )
 
-        if st.button("🚀 Create Task", use_container_width=True, type="primary"):
+        # Schedule for later option
+        schedule_later = st.checkbox("Schedule for later", key="schedule_checkbox")
+        scheduled_for_iso = None
+        if schedule_later:
+            sched_col1, sched_col2 = st.columns(2)
+            with sched_col1:
+                sched_date = st.date_input("Date", value=datetime.now().date() + timedelta(days=0), key="sched_date")
+            with sched_col2:
+                sched_time = st.time_input("Time", value=(datetime.now() + timedelta(hours=1)).time(), key="sched_time")
+            scheduled_dt = datetime.combine(sched_date, sched_time)
+            if scheduled_dt > datetime.now():
+                time_diff = scheduled_dt - datetime.now()
+                hours, remainder = divmod(int(time_diff.total_seconds()), 3600)
+                minutes = remainder // 60
+                st.info(f"Task will run in **{hours}h {minutes}m**")
+                scheduled_for_iso = scheduled_dt.isoformat()
+            else:
+                st.warning("Please select a future date/time")
+                scheduled_for_iso = None
+
+        # File upload for the task
+        uploaded_file = st.file_uploader("Attach a file (optional)", key="task_file_upload")
+
+        btn_label = "🕐 Schedule Task" if schedule_later else "🚀 Create Task"
+        if st.button(btn_label, use_container_width=True, type="primary"):
             if objective and len(objective) >= 10:
-                with st.spinner("Creating task..."):
-                    result = sync_create_task(objective)
-                if result["success"]:
-                    st.session_state.current_task_id = result["data"]["id"]
-                    st.session_state.selected_sample = ""
-                    st.success(f"Task #{result['data']['id']} created!")
-                    st.rerun()
+                if schedule_later and not scheduled_for_iso:
+                    st.warning("Please select a valid future date/time")
                 else:
-                    st.error(result["error"])
+                    with st.spinner("Creating task..."):
+                        result = sync_create_task(objective, scheduled_for=scheduled_for_iso)
+                    if result["success"]:
+                        task_id = result["data"]["id"]
+                        st.session_state.current_task_id = task_id
+                        st.session_state.selected_sample = ""
+
+                        # Upload file if attached
+                        if uploaded_file is not None:
+                            file_bytes = uploaded_file.read()
+                            upload_result = sync_upload_file(task_id, file_bytes, uploaded_file.name)
+                            if upload_result["success"]:
+                                st.success(f"File '{uploaded_file.name}' uploaded!")
+                            else:
+                                st.warning(f"File upload failed: {upload_result['error']}")
+
+                        if schedule_later:
+                            st.success(f"Task #{task_id} scheduled!")
+                        else:
+                            st.success(f"Task #{task_id} created!")
+                        st.rerun()
+                    else:
+                        st.error(result["error"])
             else:
                 st.warning("Please enter at least 10 characters")
 
@@ -795,6 +843,7 @@ def render_dashboard():
             for task in result["data"]:
                 status_colors = {
                     "pending": "#78716c",
+                    "scheduled": "#4338ca",
                     "planning": "#f97316",
                     "executing": "#f59e0b",
                     "reviewing": "#ef4444",
@@ -803,6 +852,7 @@ def render_dashboard():
                 }
                 status_emoji = {
                     "pending": "⏳",
+                    "scheduled": "🕐",
                     "planning": "📋",
                     "executing": "⚡",
                     "reviewing": "🔍",
@@ -835,7 +885,7 @@ def render_dashboard():
                 task = result["data"]
 
                 # Auto-refresh for active tasks
-                if task["status"] in ["planning", "executing", "reviewing", "pending"]:
+                if task["status"] in ["planning", "executing", "reviewing", "pending", "scheduled"]:
                     st_autorefresh(interval=5000, limit=None, key="task_autorefresh")
                 elif task["status"] == "awaiting_input":
                     st_autorefresh(interval=2000, limit=None, key="input_autorefresh")
@@ -864,14 +914,29 @@ def render_dashboard():
                 render_progress_steps(task["status"])
 
                 # Refresh button for active tasks
-                if task["status"] in ["planning", "executing", "reviewing", "pending", "awaiting_input"]:
+                if task["status"] in ["planning", "executing", "reviewing", "pending", "awaiting_input", "scheduled"]:
                     if st.button("🔄 Refresh Status", use_container_width=True):
                         st.rerun()
 
                 st.markdown("</div>", unsafe_allow_html=True)
 
                 # Status-specific content
-                if task["status"] == "pending":
+                if task["status"] == "scheduled":
+                    sched_time = task.get("scheduled_for")
+                    if sched_time:
+                        st.info(f"🕐 Task is scheduled to run at **{sched_time}**")
+                    else:
+                        st.info("🕐 Task is scheduled for future execution")
+
+                    if st.button("Cancel Schedule", use_container_width=True, key="cancel_sched"):
+                        cancel_result = sync_cancel_schedule(task["id"])
+                        if cancel_result["success"]:
+                            st.success("Schedule cancelled!")
+                            st.rerun()
+                        else:
+                            st.error(cancel_result.get("error", "Failed to cancel"))
+
+                elif task["status"] == "pending":
                     st.info("⏳ Task is queued and will begin processing shortly...")
 
                 elif task["status"] == "planning":
@@ -918,6 +983,48 @@ def render_dashboard():
                             with conf_col2:
                                 if st.button("Deny", use_container_width=True, key="deny_action"):
                                     sync_respond_to_interaction(interaction["request_id"], {"confirmed": False, "cancelled": True})
+                                    st.rerun()
+
+                            st.markdown("</div>", unsafe_allow_html=True)
+
+                        elif interaction["interaction_type"] == "agent_stuck":
+                            # Agent Stuck Dialog
+                            st.markdown("""
+                            <div class="pro-card" style="border-left: 4px solid #dc2626;">
+                                <div class="pro-card-header">
+                                    <div class="pro-card-icon icon-orange">🛑</div>
+                                    <h3>Agent Needs Your Help</h3>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                            st.markdown(f"{interaction['prompt_message']}")
+
+                            if interaction.get("preview"):
+                                preview = interaction["preview"]
+                                if isinstance(preview, dict):
+                                    if preview.get("options"):
+                                        st.markdown("**Suggested options:**")
+                                        for opt in preview["options"]:
+                                            st.markdown(f"- {opt}")
+
+                            with st.form(key="stuck_guidance_form"):
+                                guidance_text = st.text_area(
+                                    "Tell the agent what to do:",
+                                    placeholder="Provide specific instructions, clarify your request, or type 'cancel' to stop the task...",
+                                    height=100,
+                                    key="stuck_guidance"
+                                )
+                                guide_col1, guide_col2 = st.columns(2)
+                                with guide_col1:
+                                    submitted = st.form_submit_button("Send Guidance", type="primary", use_container_width=True)
+                                with guide_col2:
+                                    stop_btn = st.form_submit_button("Stop Task", use_container_width=True)
+
+                                if submitted and guidance_text:
+                                    sync_respond_to_interaction(interaction["request_id"], {"values": {"guidance": guidance_text}})
+                                    st.rerun()
+                                elif stop_btn:
+                                    sync_respond_to_interaction(interaction["request_id"], {"cancelled": True})
                                     st.rerun()
 
                             st.markdown("</div>", unsafe_allow_html=True)

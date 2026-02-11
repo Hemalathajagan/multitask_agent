@@ -67,12 +67,36 @@ async def update_user_photo(db: AsyncSession, user_id: int, profile_photo: str) 
 
 
 # Task CRUD
-async def create_task(db: AsyncSession, user_id: int, objective: str) -> Task:
-    task = Task(user_id=user_id, objective=objective, status=TaskStatus.PENDING)
+async def create_task(
+    db: AsyncSession, user_id: int, objective: str,
+    scheduled_for: Optional[datetime] = None
+) -> Task:
+    is_scheduled = scheduled_for is not None
+    status = TaskStatus.SCHEDULED if is_scheduled else TaskStatus.PENDING
+    task = Task(
+        user_id=user_id, objective=objective, status=status,
+        scheduled_for=scheduled_for, is_scheduled=is_scheduled
+    )
     db.add(task)
     await db.commit()
     await db.refresh(task)
     return task
+
+
+async def get_scheduled_tasks(db: AsyncSession, user_id: int) -> List[Task]:
+    result = await db.execute(
+        select(Task)
+        .where(Task.user_id == user_id, Task.status == TaskStatus.SCHEDULED)
+        .order_by(Task.scheduled_for)
+    )
+    return result.scalars().all()
+
+
+async def get_all_scheduled_tasks(db: AsyncSession) -> List[Task]:
+    result = await db.execute(
+        select(Task).where(Task.status == TaskStatus.SCHEDULED)
+    )
+    return result.scalars().all()
 
 
 async def get_task(db: AsyncSession, task_id: int) -> Optional[Task]:

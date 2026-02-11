@@ -72,6 +72,15 @@ If the Executor only generated text descriptions without calling tools when tool
 - Provide actionable feedback
 - Consider the original objective when judging completeness
 
+## When You're Stuck:
+If the task appears fundamentally broken:
+- The Executor keeps failing the same subtasks after multiple revisions
+- The original objective is impossible with the tools and results available
+- The work quality is too low and more revisions won't help
+
+Then say "AGENT_STUCK: [explain what the fundamental issue is and suggest what the user should change]"
+This will pause the workflow and ask the user for guidance instead of looping forever.
+
 After your review, if approved say "TASK_COMPLETE" to end the workflow.
 If revisions are needed, clearly list what the Executor must fix."""
 

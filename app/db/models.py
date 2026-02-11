@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import relationship
 import enum
 
@@ -12,6 +12,7 @@ class TaskStatus(str, enum.Enum):
     EXECUTING = "executing"
     REVIEWING = "reviewing"
     AWAITING_INPUT = "awaiting_input"
+    SCHEDULED = "scheduled"
     COMPLETED = "completed"
     FAILED = "failed"
 
@@ -20,6 +21,7 @@ class InteractionType(str, enum.Enum):
     INPUT_NEEDED = "input_needed"
     CONFIRMATION = "confirmation"
     CHOICE = "choice"
+    AGENT_STUCK = "agent_stuck"
 
 
 class User(Base):
@@ -46,6 +48,8 @@ class Task(Base):
     plan = Column(Text, nullable=True)
     execution_result = Column(Text, nullable=True)
     review_result = Column(Text, nullable=True)
+    scheduled_for = Column(DateTime, nullable=True)
+    is_scheduled = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

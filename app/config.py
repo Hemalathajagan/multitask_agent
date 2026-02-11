@@ -29,6 +29,18 @@ class Settings(BaseSettings):
     # Workspace
     workspace_dir: str = "workspace"
 
+    # Social Media APIs
+    instagram_access_token: str = ""
+    instagram_business_account_id: str = ""
+    twitter_api_key: str = ""
+    twitter_api_secret: str = ""
+    twitter_access_token: str = ""
+    twitter_access_token_secret: str = ""
+    linkedin_access_token: str = ""
+    linkedin_person_id: str = ""
+    facebook_access_token: str = ""
+    facebook_page_id: str = ""
+
     class Config:
         env_file = ".env"
         extra = "ignore"

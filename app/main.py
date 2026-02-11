@@ -6,8 +6,10 @@ from app.api.auth import router as auth_router
 from app.api.tasks import router as tasks_router
 from app.api.websocket import router as websocket_router
 from app.api.interactions import router as interactions_router
-from app.db.database import init_db
+from app.api.files import router as files_router
+from app.db.database import init_db, migrate_db
 from app.config import get_settings
+from app.scheduler import init_scheduler, load_pending_scheduled_tasks, shutdown_scheduler
 
 settings = get_settings()
 
@@ -16,8 +18,12 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     # Startup
     await init_db()
+    await migrate_db()
+    init_scheduler(settings.database_url)
+    await load_pending_scheduled_tasks()
     yield
     # Shutdown
+    shutdown_scheduler()
 
 
 app = FastAPI(
@@ -41,6 +47,7 @@ app.include_router(auth_router)
 app.include_router(tasks_router)
 app.include_router(websocket_router)
 app.include_router(interactions_router)
+app.include_router(files_router)
 
 
 @app.get("/")

@@ -5,9 +5,11 @@ from typing import List
 from app.db.database import get_db
 from app.db.crud import (
     create_task, get_task, get_user_tasks, update_task_status,
-    update_task_objective, reset_task_for_rerun, delete_task_messages
+    update_task_objective, reset_task_for_rerun, delete_task_messages,
+    get_scheduled_tasks
 )
 from app.db.models import TaskStatus, User
+from app.scheduler import schedule_task_execution, cancel_scheduled_task
 from app.auth.dependencies import get_current_user
 from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, TaskCreateResponse
 
@@ -21,12 +23,19 @@ async def create_new_task(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Create a new task and start agent processing."""
-    task = await create_task(db, current_user.id, task_data.objective)
+    """Create a new task and start agent processing (or schedule for later)."""
+    task = await create_task(
+        db, current_user.id, task_data.objective,
+        scheduled_for=task_data.scheduled_for
+    )
 
-    # Start agent processing in background
-    from app.agents.orchestrator import process_task
-    background_tasks.add_task(process_task, task.id)
+    if task_data.scheduled_for:
+        # Schedule for future execution
+        schedule_task_execution(task.id, task_data.scheduled_for)
+    else:
+        # Start agent processing immediately
+        from app.agents.orchestrator import process_task
+        background_tasks.add_task(process_task, task.id)
 
     return task
 
@@ -69,6 +78,8 @@ async def get_task_details(
         "plan": task.plan,
         "execution_result": task.execution_result,
         "review_result": task.review_result,
+        "scheduled_for": task.scheduled_for,
+        "is_scheduled": task.is_scheduled or False,
         "created_at": task.created_at,
         "updated_at": task.updated_at,
         "messages": [
@@ -186,3 +197,37 @@ async def continue_task(
     background_tasks.add_task(process_task, new_task.id)
 
     return new_task
+
+
+@router.get("/scheduled/list", response_model=List[TaskListResponse])
+async def list_scheduled_tasks(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """List all scheduled (future) tasks for the current user."""
+    tasks = await get_scheduled_tasks(db, current_user.id)
+    return tasks
+
+
+@router.post("/{task_id}/cancel-schedule", response_model=TaskCreateResponse)
+async def cancel_task_schedule(
+    task_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Cancel a scheduled task before it runs."""
+    task = await get_task(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if task.status != TaskStatus.SCHEDULED:
+        raise HTTPException(status_code=400, detail="Task is not in scheduled state")
+
+    cancel_scheduled_task(task_id)
+    task.status = TaskStatus.FAILED
+    task.is_scheduled = False
+    task.review_result = "Cancelled by user before execution."
+    await db.commit()
+    await db.refresh(task)
+    return task

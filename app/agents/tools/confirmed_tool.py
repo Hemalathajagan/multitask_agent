@@ -15,6 +15,7 @@ TOOL_INPUT_SPECS = {
         ]
     },
     "web_search": {"needs_input": False, "confirm_only": True},
+    "web_search_news": {"needs_input": False, "confirm_only": True},
     "read_webpage": {"needs_input": False, "confirm_only": True},
     "create_file": {"needs_input": False, "confirm_only": True},
     "execute_python_code": {"needs_input": False, "confirm_only": True},
@@ -34,11 +35,56 @@ TOOL_INPUT_SPECS = {
     "browser_get_text": {"needs_input": False, "confirm_only": True},
     "browser_close": {"needs_input": False, "confirm_only": True},
     "desktop_screenshot": {"needs_input": False, "confirm_only": True},
+    "desktop_screenshot_region": {"needs_input": False, "confirm_only": True},
+    "desktop_find_on_screen": {"needs_input": False, "confirm_only": True},
+    "desktop_find_window": {"needs_input": False, "confirm_only": True},
     "desktop_click": {"needs_input": False, "confirm_only": True},
     "desktop_double_click": {"needs_input": False, "confirm_only": True},
     "desktop_type_text": {"needs_input": False, "confirm_only": True},
     "desktop_hotkey": {"needs_input": False, "confirm_only": True},
     "desktop_move_to": {"needs_input": False, "confirm_only": True},
+    # Excel/CSV editing
+    "edit_excel_file": {
+        "needs_input": True,
+        "fields": [
+            {"name": "file_path", "label": "Excel File Path", "type": "text", "required": True},
+            {"name": "sheet_name", "label": "Sheet Name", "type": "text", "required": True},
+            {"name": "updates_json", "label": "Cell Updates (JSON)", "type": "textarea", "required": True},
+        ]
+    },
+    "edit_csv_file": {
+        "needs_input": True,
+        "fields": [
+            {"name": "file_path", "label": "CSV File Path", "type": "text", "required": True},
+            {"name": "updates_json", "label": "Row Updates (JSON)", "type": "textarea", "required": True},
+        ]
+    },
+    # Social media
+    "post_to_instagram": {
+        "needs_input": True,
+        "fields": [
+            {"name": "image_url", "label": "Image URL (public)", "type": "text", "required": True},
+            {"name": "caption", "label": "Caption", "type": "textarea", "required": True},
+        ]
+    },
+    "post_to_twitter": {
+        "needs_input": True,
+        "fields": [
+            {"name": "text", "label": "Tweet Text (max 280 chars)", "type": "textarea", "required": True},
+        ]
+    },
+    "post_to_linkedin": {
+        "needs_input": True,
+        "fields": [
+            {"name": "text", "label": "Post Content", "type": "textarea", "required": True},
+        ]
+    },
+    "post_to_facebook": {
+        "needs_input": True,
+        "fields": [
+            {"name": "message", "label": "Post Message", "type": "textarea", "required": True},
+        ]
+    },
 }
 
 

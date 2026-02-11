@@ -29,8 +29,8 @@ class InteractionManager:
         """Pause tool execution and request input from user."""
         async with AsyncSessionLocal() as db:
             task = await get_task(db, task_id)
-            if task:
-                cls._task_status_before[task_id] = task.status.value
+            if task and task_id not in cls._task_status_before:
+                cls._task_status_before[task_id] = task.status.value if task.status != TaskStatus.AWAITING_INPUT else "executing"
 
             interaction = await create_interaction_request(
                 db, task_id,
@@ -75,8 +75,8 @@ class InteractionManager:
         """Pause tool execution and request confirmation from user."""
         async with AsyncSessionLocal() as db:
             task = await get_task(db, task_id)
-            if task:
-                cls._task_status_before[task_id] = task.status.value
+            if task and task_id not in cls._task_status_before:
+                cls._task_status_before[task_id] = task.status.value if task.status != TaskStatus.AWAITING_INPUT else "executing"
 
             preview = {
                 "tool": tool_name,
@@ -113,6 +113,56 @@ class InteractionManager:
         await send_status_update(task_id, prev)
 
         return confirmed
+
+    @classmethod
+    async def request_guidance(
+        cls,
+        task_id: int,
+        reason: str,
+        context: str,
+        options: list = None,
+        timeout: float = 600.0
+    ) -> Optional[dict]:
+        """Pause the entire workflow and ask the user for guidance when agent is stuck."""
+        async with AsyncSessionLocal() as db:
+            task = await get_task(db, task_id)
+            if task and task_id not in cls._task_status_before:
+                cls._task_status_before[task_id] = task.status.value if task.status != TaskStatus.AWAITING_INPUT else "executing"
+
+            fields = [
+                {"name": "guidance", "label": "What should the agent do?", "type": "textarea", "required": True}
+            ]
+            prompt = f"**Agent needs help**\n\n**Reason:** {reason}\n\n**Context:** {context}"
+
+            interaction = await create_interaction_request(
+                db, task_id,
+                InteractionType.AGENT_STUCK,
+                "system", prompt,
+                json.dumps(fields), json.dumps({"reason": reason, "context": context, "options": options or []})
+            )
+            await update_task_status(db, task_id, TaskStatus.AWAITING_INPUT)
+
+        from app.api.websocket import send_status_update
+        await send_status_update(task_id, "awaiting_input")
+
+        event = asyncio.Event()
+        cls._events[interaction.id] = event
+
+        try:
+            await asyncio.wait_for(event.wait(), timeout=timeout)
+            response = cls._responses.pop(interaction.id, None)
+        except asyncio.TimeoutError:
+            response = {"values": {"guidance": "cancel"}}
+        finally:
+            cls._events.pop(interaction.id, None)
+
+        async with AsyncSessionLocal() as db:
+            prev = cls._task_status_before.pop(task_id, "executing")
+            await update_task_status(db, task_id, TaskStatus(prev))
+        from app.api.websocket import send_status_update as send_update
+        await send_update(task_id, prev)
+
+        return response
 
     @classmethod
     def resolve(cls, request_id: int, response_data: dict):

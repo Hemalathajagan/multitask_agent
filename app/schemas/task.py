@@ -7,6 +7,7 @@ from app.db.models import TaskStatus
 
 class TaskCreate(BaseModel):
     objective: str = Field(..., min_length=10, max_length=2000)
+    scheduled_for: Optional[datetime] = None
 
 
 class TaskUpdate(BaseModel):
@@ -21,6 +22,8 @@ class TaskCreateResponse(BaseModel):
     plan: Optional[str] = None
     execution_result: Optional[str] = None
     review_result: Optional[str] = None
+    scheduled_for: Optional[datetime] = None
+    is_scheduled: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -57,6 +60,8 @@ class TaskResponse(BaseModel):
     plan: Optional[str] = None
     execution_result: Optional[str] = None
     review_result: Optional[str] = None
+    scheduled_for: Optional[datetime] = None
+    is_scheduled: bool = False
     created_at: datetime
     updated_at: datetime
     messages: List[AgentMessageResponse] = []
@@ -70,6 +75,8 @@ class TaskListResponse(BaseModel):
     id: int
     objective: str
     status: TaskStatus
+    scheduled_for: Optional[datetime] = None
+    is_scheduled: bool = False
     created_at: datetime
 
     class Config:
