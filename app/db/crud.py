@@ -3,7 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from typing import Optional, List
 
-from app.db.models import User, Task, AgentMessage, TaskStatus
+from datetime import datetime
+from app.db.models import User, Task, AgentMessage, TaskFile, InteractionRequest, TaskStatus, InteractionType
 
 
 # User CRUD
@@ -77,7 +78,7 @@ async def create_task(db: AsyncSession, user_id: int, objective: str) -> Task:
 async def get_task(db: AsyncSession, task_id: int) -> Optional[Task]:
     result = await db.execute(
         select(Task)
-        .options(selectinload(Task.messages))
+        .options(selectinload(Task.messages), selectinload(Task.files))
         .where(Task.id == task_id)
     )
     return result.scalar_one_or_none()
@@ -177,3 +178,71 @@ async def get_task_messages(db: AsyncSession, task_id: int) -> List[AgentMessage
         .order_by(AgentMessage.timestamp)
     )
     return result.scalars().all()
+
+
+# TaskFile CRUD
+async def create_task_file(
+    db: AsyncSession, task_id: int, filename: str,
+    file_path: str, file_type: str, size_bytes: int
+) -> TaskFile:
+    task_file = TaskFile(
+        task_id=task_id, filename=filename,
+        file_path=file_path, file_type=file_type,
+        size_bytes=size_bytes
+    )
+    db.add(task_file)
+    await db.commit()
+    await db.refresh(task_file)
+    return task_file
+
+
+async def get_task_files(db: AsyncSession, task_id: int) -> List[TaskFile]:
+    result = await db.execute(
+        select(TaskFile)
+        .where(TaskFile.task_id == task_id)
+        .order_by(TaskFile.created_at)
+    )
+    return result.scalars().all()
+
+
+# InteractionRequest CRUD
+async def create_interaction_request(
+    db: AsyncSession, task_id: int, interaction_type: InteractionType,
+    tool_name: str, prompt_message: str,
+    fields_json: Optional[str] = None, preview_json: Optional[str] = None
+) -> InteractionRequest:
+    interaction = InteractionRequest(
+        task_id=task_id, interaction_type=interaction_type,
+        tool_name=tool_name, prompt_message=prompt_message,
+        fields_json=fields_json, preview_json=preview_json,
+        status="pending"
+    )
+    db.add(interaction)
+    await db.commit()
+    await db.refresh(interaction)
+    return interaction
+
+
+async def get_pending_interaction(db: AsyncSession, task_id: int) -> Optional[InteractionRequest]:
+    result = await db.execute(
+        select(InteractionRequest)
+        .where(InteractionRequest.task_id == task_id, InteractionRequest.status == "pending")
+        .order_by(InteractionRequest.created_at.desc())
+    )
+    return result.scalar_one_or_none()
+
+
+async def respond_to_interaction(
+    db: AsyncSession, request_id: int, response_json: str
+) -> Optional[InteractionRequest]:
+    result = await db.execute(
+        select(InteractionRequest).where(InteractionRequest.id == request_id)
+    )
+    interaction = result.scalar_one_or_none()
+    if interaction:
+        interaction.response_json = response_json
+        interaction.status = "responded"
+        interaction.responded_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(interaction)
+    return interaction

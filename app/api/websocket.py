@@ -69,3 +69,25 @@ async def send_status_update(task_id: int, status: str):
         "type": "status_update",
         "status": status
     })
+
+
+async def send_input_request(task_id: int, request_id: int, tool_name: str, prompt: str, fields: list):
+    """Send input request to all connected clients for a task."""
+    await manager.broadcast_to_task(task_id, {
+        "type": "request_input",
+        "request_id": request_id,
+        "tool_name": tool_name,
+        "prompt": prompt,
+        "fields": fields,
+    })
+
+
+async def send_confirmation_request(task_id: int, request_id: int, tool_name: str, description: str, parameters: dict):
+    """Send confirmation request to all connected clients for a task."""
+    await manager.broadcast_to_task(task_id, {
+        "type": "request_confirmation",
+        "request_id": request_id,
+        "tool_name": tool_name,
+        "description": description,
+        "parameters": parameters,
+    })

@@ -58,6 +58,15 @@ OR
 2. [Issue 2]
 ...
 
+## Tool Usage Review:
+When reviewing the Executor's work, also check:
+- Did the Executor actually use tools where appropriate (not just describe what they would do)?
+- Were files actually created when deliverables were required?
+- Were search results actually used to inform outputs?
+- If tool calls failed, did the Executor handle errors and retry or use alternatives?
+
+If the Executor only generated text descriptions without calling tools when tools were clearly needed, mark as NEEDS_REVISION and instruct them to actually use their tools.
+
 ## Important:
 - Be fair but thorough
 - Provide actionable feedback

@@ -11,6 +11,7 @@ from streamlit_app.utils import (
     sync_get_task, sync_get_tasks, sync_create_task,
     sync_rename_task, sync_rerun_task, sync_continue_task
 )
+from streamlit_app.utils.api_client import sync_get_pending_interaction, sync_respond_to_interaction
 from streamlit_app.components import render_login_form, render_register_form, render_sidebar
 
 st.set_page_config(
@@ -172,6 +173,7 @@ st.markdown("""
     .status-reviewing { background: #fecaca; color: #b91c1c; }
     .status-completed { background: #bbf7d0; color: #166534; }
     .status-failed { background: #fecaca; color: #b91c1c; }
+    .status-awaiting_input { background: #dbeafe; color: #1d4ed8; }
 
     /* ============================================
        PROGRESS STEPS
@@ -637,6 +639,7 @@ def render_progress_steps(status: str):
         "pending": 0,
         "planning": 1,
         "executing": 2,
+        "awaiting_input": 2,
         "reviewing": 3,
         "completed": 4,
         "failed": 4
@@ -834,6 +837,8 @@ def render_dashboard():
                 # Auto-refresh for active tasks
                 if task["status"] in ["planning", "executing", "reviewing", "pending"]:
                     st_autorefresh(interval=5000, limit=None, key="task_autorefresh")
+                elif task["status"] == "awaiting_input":
+                    st_autorefresh(interval=2000, limit=None, key="input_autorefresh")
 
                 # Task Details Card
                 st.markdown("""
@@ -859,7 +864,7 @@ def render_dashboard():
                 render_progress_steps(task["status"])
 
                 # Refresh button for active tasks
-                if task["status"] in ["planning", "executing", "reviewing", "pending"]:
+                if task["status"] in ["planning", "executing", "reviewing", "pending", "awaiting_input"]:
                     if st.button("🔄 Refresh Status", use_container_width=True):
                         st.rerun()
 
@@ -877,6 +882,91 @@ def render_dashboard():
                     if task.get("plan"):
                         with st.expander("📋 View Current Plan", expanded=True):
                             st.markdown(task["plan"])
+
+                elif task["status"] == "awaiting_input":
+                    st.warning("🔔 **Action requires your input!**")
+                    interaction_result = sync_get_pending_interaction(task_id)
+
+                    if interaction_result["success"] and interaction_result["data"].get("pending"):
+                        interaction = interaction_result["data"]
+
+                        if interaction["interaction_type"] == "confirmation":
+                            # Confirmation Dialog
+                            st.markdown("""
+                            <div class="pro-card" style="border-left: 4px solid #f97316;">
+                                <div class="pro-card-header">
+                                    <div class="pro-card-icon icon-orange">⚠️</div>
+                                    <h3>Action Confirmation Required</h3>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                            st.markdown(f"**Tool:** `{interaction['tool_name']}`")
+                            st.markdown(f"**Action:** {interaction['prompt_message']}")
+
+                            if interaction.get("preview"):
+                                preview = interaction["preview"]
+                                if isinstance(preview, dict) and "parameters" in preview:
+                                    with st.expander("View Parameters", expanded=True):
+                                        for key, val in preview["parameters"].items():
+                                            st.markdown(f"- **{key}:** {val}")
+
+                            conf_col1, conf_col2 = st.columns(2)
+                            with conf_col1:
+                                if st.button("Approve", type="primary", use_container_width=True, key="approve_action"):
+                                    sync_respond_to_interaction(interaction["request_id"], {"confirmed": True})
+                                    st.rerun()
+                            with conf_col2:
+                                if st.button("Deny", use_container_width=True, key="deny_action"):
+                                    sync_respond_to_interaction(interaction["request_id"], {"confirmed": False, "cancelled": True})
+                                    st.rerun()
+
+                            st.markdown("</div>", unsafe_allow_html=True)
+
+                        elif interaction["interaction_type"] == "input_needed":
+                            # Input Form
+                            st.markdown("""
+                            <div class="pro-card" style="border-left: 4px solid #3b82f6;">
+                                <div class="pro-card-header">
+                                    <div class="pro-card-icon icon-blue">📝</div>
+                                    <h3>Input Required</h3>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                            st.markdown(f"**{interaction['prompt_message']}**")
+
+                            fields = interaction.get("fields") or []
+                            values = {}
+
+                            with st.form(key="interaction_input_form"):
+                                for field in fields:
+                                    field_name = field["name"]
+                                    field_label = field["label"]
+                                    field_type = field.get("type", "text")
+                                    field_default = field.get("default", "")
+
+                                    if field_type == "textarea":
+                                        values[field_name] = st.text_area(field_label, value=field_default, key=f"input_{field_name}")
+                                    elif field_type == "email":
+                                        values[field_name] = st.text_input(field_label, value=field_default, key=f"input_{field_name}")
+                                    else:
+                                        values[field_name] = st.text_input(field_label, value=field_default, key=f"input_{field_name}")
+
+                                input_col1, input_col2 = st.columns(2)
+                                with input_col1:
+                                    submitted = st.form_submit_button("Submit", type="primary", use_container_width=True)
+                                with input_col2:
+                                    cancelled = st.form_submit_button("Cancel", use_container_width=True)
+
+                                if submitted:
+                                    sync_respond_to_interaction(interaction["request_id"], {"values": values})
+                                    st.rerun()
+                                elif cancelled:
+                                    sync_respond_to_interaction(interaction["request_id"], {"cancelled": True})
+                                    st.rerun()
+
+                            st.markdown("</div>", unsafe_allow_html=True)
+                    else:
+                        st.info("Waiting for agent to prepare request...")
 
                 elif task["status"] == "reviewing":
                     st.info("🔍 **Reviewer Agent** is validating the work and ensuring quality...")

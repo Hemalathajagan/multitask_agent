@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from typing import Optional
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
@@ -11,9 +12,10 @@ from app.agents.reviewer import create_reviewer_agent
 from app.db.database import AsyncSessionLocal
 from app.db.crud import (
     update_task_status, update_task_plan, update_task_execution,
-    update_task_review, create_agent_message, get_task
+    update_task_review, create_agent_message, get_task, create_task_file
 )
 from app.db.models import TaskStatus
+from app.agents.tools._context import set_current_task_id
 
 settings = get_settings()
 
@@ -45,6 +47,9 @@ async def process_task(task_id: int):
             return
 
         try:
+            # Set task ID context for tool confirmation flow
+            set_current_task_id(task_id)
+
             # Update status to planning
             await update_task_status(db, task_id, TaskStatus.PLANNING)
 
@@ -74,8 +79,10 @@ async def process_task(task_id: int):
                 selector_prompt=SELECTOR_PROMPT,
             )
 
-            # Initial message with the task objective
+            # Initial message with the task objective and task ID for tool usage
             initial_message = f"""## Task Objective
+
+Task ID: {task_id}
 
 {task.objective}
 
@@ -122,6 +129,17 @@ Please begin by creating a detailed plan to accomplish this objective."""
                 await update_task_execution(db, task_id, "\n\n".join(execution_content))
             if review_content:
                 await update_task_review(db, task_id, "\n\n".join(review_content))
+
+            # Scan workspace for files created by tools
+            task_dir = Path("workspace") / f"task_{task_id}"
+            if task_dir.exists():
+                for file_path in task_dir.iterdir():
+                    if file_path.is_file():
+                        await create_task_file(
+                            db, task_id, file_path.name,
+                            str(file_path), file_path.suffix,
+                            file_path.stat().st_size
+                        )
 
             # Mark task as completed
             await update_task_status(db, task_id, TaskStatus.COMPLETED)

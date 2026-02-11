@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.api.tasks import router as tasks_router
 from app.api.websocket import router as websocket_router
+from app.api.interactions import router as interactions_router
 from app.db.database import init_db
 from app.config import get_settings
 
@@ -39,6 +40,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(tasks_router)
 app.include_router(websocket_router)
+app.include_router(interactions_router)
 
 
 @app.get("/")

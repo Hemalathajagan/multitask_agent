@@ -79,6 +79,17 @@ async def get_task_details(
                 "timestamp": msg.timestamp
             }
             for msg in task.messages
+        ],
+        "files": [
+            {
+                "id": f.id,
+                "filename": f.filename,
+                "file_path": f.file_path,
+                "file_type": f.file_type,
+                "size_bytes": f.size_bytes,
+                "created_at": f.created_at
+            }
+            for f in (task.files or [])
         ]
     }
 

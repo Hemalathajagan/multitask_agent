@@ -182,6 +182,27 @@ class APIClient:
                 return {"success": True, "data": response.json()}
             return {"success": False, "error": _safe_json_error(response, "Failed to change password")}
 
+    async def get_pending_interaction(self, task_id: int) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.get(
+                f"{self.base_url}/interactions/task/{task_id}/pending",
+                headers=self._get_headers(),
+            )
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": "Failed to check interactions"}
+
+    async def respond_to_interaction(self, request_id: int, response_data: dict) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.post(
+                f"{self.base_url}/interactions/{request_id}/respond",
+                json=response_data,
+                headers=self._get_headers(),
+            )
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            return {"success": False, "error": "Failed to respond to interaction"}
+
     async def update_photo(self, profile_photo: str) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.put(
@@ -310,3 +331,19 @@ def sync_update_photo(profile_photo: str) -> Dict[str, Any]:
     if "token" in st.session_state:
         client.set_token(st.session_state.token)
     return asyncio.run(client.update_photo(profile_photo))
+
+
+def sync_get_pending_interaction(task_id: int) -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.get_pending_interaction(task_id))
+
+
+def sync_respond_to_interaction(request_id: int, response_data: dict) -> Dict[str, Any]:
+    import asyncio
+    client = get_api_client()
+    if "token" in st.session_state:
+        client.set_token(st.session_state.token)
+    return asyncio.run(client.respond_to_interaction(request_id, response_data))

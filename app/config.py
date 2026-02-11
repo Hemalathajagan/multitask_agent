@@ -18,6 +18,17 @@ class Settings(BaseSettings):
     api_host: str = "127.0.0.1"
     api_port: int = 8000
 
+    # SMTP (for email tool)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_address: str = ""
+    smtp_use_tls: bool = True
+
+    # Workspace
+    workspace_dir: str = "workspace"
+
     class Config:
         env_file = ".env"
         extra = "ignore"

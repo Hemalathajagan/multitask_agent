@@ -38,6 +38,18 @@ class AgentMessageResponse(BaseModel):
         from_attributes = True
 
 
+class TaskFileResponse(BaseModel):
+    id: int
+    filename: str
+    file_path: str
+    file_type: str
+    size_bytes: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class TaskResponse(BaseModel):
     id: int
     objective: str
@@ -48,6 +60,7 @@ class TaskResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     messages: List[AgentMessageResponse] = []
+    files: List[TaskFileResponse] = []
 
     class Config:
         from_attributes = True
